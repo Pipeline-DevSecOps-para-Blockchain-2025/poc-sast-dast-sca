@@ -18,4 +18,6 @@
 | :- | ----------------------------: | :----: | :------: | :-------- |
 | SAST-02 | [Reentrancy (SWC-107)](https://swcregistry.io/docs/SWC-107/) | [`withdraw`](./vulnerable/ReEntrancy.sol#L44-L52) | [51](./vulnerable/ReEntrancy.sol#L51) | O estado de `balances` não é atualizado antes da transferência e pode ser modificado enquanto ela acontece. |
 
+### Correção: [`EtherStoreGuarded`](./vulnerable/ReEntrancy.sol#L60-L78)
+
 ---

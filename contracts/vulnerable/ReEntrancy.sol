@@ -41,7 +41,7 @@ contract EtherStore {
         balances[msg.sender] += msg.value;
     }
 
-    function withdraw() public {
+    function withdraw() public virtual {
         uint256 bal = balances[msg.sender];
         require(bal > 0);
 
@@ -54,5 +54,25 @@ contract EtherStore {
     // Helper function to check the balance of this contract
     function getBalance() public view returns (uint256) {
         return address(this).balance;
+    }
+}
+
+/**
+ * Source:
+ * https://github.com/Cyfrin/solidity-by-example.github.io/blob/f88d8ed8/contracts/src/hacks/re-entrancy/ReEntrancyGuard.sol
+ */
+contract EtherStoreGuarded is EtherStore {
+    bool internal locked;
+
+    /// forge-lint: disable-next-item(unwrapped-modifier-logic)
+    modifier noReentrant() {
+        require(!locked, "No re-entrancy");
+        locked = true;
+        _;
+        locked = false;
+    }
+
+    function withdraw() public override noReentrant {
+        super.withdraw();
     }
 }
