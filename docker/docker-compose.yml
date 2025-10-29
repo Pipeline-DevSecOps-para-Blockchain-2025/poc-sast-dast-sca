@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Base service (not run directly)
+  base:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    image: security-tools-poc:base
+    profiles: ["build-only"]
+
+  # Slither service
+  slither:
+    build:
+      context: .
+      dockerfile: Dockerfile.slither
+    image: security-tools-poc:slither
+    container_name: poc-slither
+    volumes:
+      - ../poc-workspace:/poc-workspace
+      - ../poc-temp:/poc-temp
+      - ../poc-results:/poc-results
+    environment:
+      - SLITHER_CONFIG=/home/pocuser/.slither/slither.config.json
+      - PYTHONPATH=/home/pocuser/venv/lib/python3.10/site-packages
+    working_dir: /poc-workspace
+    user: pocuser
+    networks:
+      - poc-network
+    profiles: ["slither", "all"]
+
+  # Mythril service
+  mythril:
+    build:
+      context: .
+      dockerfile: Dockerfile.mythril
+    image: security-tools-poc:mythril
+    container_name: poc-mythril
+    volumes:
+      - ../poc-workspace:/poc-workspace
+      - ../poc-temp:/poc-temp
+      - ../poc-results:/poc-results
+    environment:
+      - PYTHONPATH=/home/pocuser/venv/lib/python3.10/site-packages
+    working_dir: /poc-workspace
+    user: pocuser
+    networks:
+      - poc-network
+    profiles: ["mythril", "all"]
+
+  # Echidna service
+  echidna:
+    build:
+      context: .
+      dockerfile: Dockerfile.echidna
+    image: security-tools-poc:echidna
+    container_name: poc-echidna
+    volumes:
+      - ../poc-workspace:/poc-workspace
+      - ../poc-temp:/poc-temp
+      - ../poc-results:/poc-results
+    environment:
+      - ECHIDNA_CONFIG=/home/pocuser/.echidna/echidna.config.yaml
+    working_dir: /poc-workspace
+    user: pocuser
+    networks:
+      - poc-network
+    profiles: ["echidna", "all"]
+
+  # Foundry service
+  foundry:
+    build:
+      context: .
+      dockerfile: Dockerfile.foundry
+    image: security-tools-poc:foundry
+    container_name: poc-foundry
+    volumes:
+      - ../poc-workspace:/poc-workspace
+      - ../poc-temp:/poc-temp
+      - ../poc-results:/poc-results
+    environment:
+      - PATH=/home/pocuser/.foundry/bin:/home/pocuser/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    working_dir: /poc-workspace
+    user: pocuser
+    networks:
+      - poc-network
+    profiles: ["foundry", "all"]
+
+networks:
+  poc-network:
+    driver: bridge
+    name: security-tools-poc-network
+
+volumes:
+  poc-workspace:
+    name: security-tools-poc-workspace
+  poc-temp:
+    name: security-tools-poc-temp
+  poc-results:
+    name: security-tools-poc-results

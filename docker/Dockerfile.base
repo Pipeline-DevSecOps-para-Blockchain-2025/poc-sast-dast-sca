@@ -1,0 +1,72 @@
+# Base Docker image for Security Tools PoC
+FROM ubuntu:22.04
+
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com; marmitar <tiagodepalves@gmail.com>"
+LABEL org.opencontainers.image.description="This is a base docker for the application."
+LABEL org.opencontainers.image.version="1.0.0"
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV NODE_VERSION=18.17.0
+
+# Install system dependencies (do not install nodejs/npm here; installed from NodeSource below)
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    python3 \
+    python3-pip \
+    python3-dev \
+    software-properties-common \
+    apt-transport-https \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js (specific version) from NodeSource
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get update \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust and Cargo (for Foundry)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install Solidity compiler
+RUN add-apt-repository ppa:ethereum/ethereum \
+    && apt-get update \
+    && apt-get install -y solc
+
+# Create working directories
+RUN mkdir -p /poc-workspace /poc-temp /poc-results
+
+# Set working directory
+WORKDIR /poc-workspace
+
+# Create non-root user for security
+RUN useradd -m -s /bin/bash pocuser \
+    && chown -R pocuser:pocuser /poc-workspace /poc-temp /poc-results
+
+# Switch to non-root user
+USER pocuser
+
+# Set up Python virtual environment
+RUN python3 -m pip install --user virtualenv \
+    && python3 -m virtualenv /home/pocuser/venv
+
+# Activate virtual environment by default
+ENV PATH="/home/pocuser/venv/bin:$PATH"
+
+# Install common Python packages
+RUN pip install --upgrade pip setuptools wheel
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python3 --version && node --version || exit 1
+
+# Default command
+CMD ["/bin/bash"]

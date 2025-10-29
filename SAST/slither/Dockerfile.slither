@@ -1,0 +1,27 @@
+# Dockerfile.slither
+# Minimal image to run slither-analyzer
+FROM python:3.11-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    curl \
+    ca-certificates \
+    gnupg \
+    build-essential \
+  && rm -rf /var/lib/apt/lists/*
+
+# Try to install solc from ethereum PPA (may fail on some base images)
+RUN set -eux; \
+    apt-get update; \
+    add-apt-repository ppa:ethereum/ethereum -y || true; \
+    apt-get update || true; \
+    apt-get install -y --no-install-recommends solc || echo "Warning: solc install failed"
+
+RUN python -m pip install --upgrade pip setuptools wheel
+RUN python -m pip install slither-analyzer
+
+WORKDIR /work
+ENTRYPOINT ["slither"]

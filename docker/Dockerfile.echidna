@@ -1,0 +1,48 @@
+# Echidna-specific Docker image
+FROM security-tools-poc:base
+
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com; marmitar <tiagodepalves@gmail.com>"
+LABEL org.opencontainers.image.description="This is a base docker for the application."
+LABEL org.opencontainers.image.version="1.0.0"
+
+USER root
+
+# Install Haskell and Cabal (required for Echidna)
+RUN apt-get update && apt-get install -y \
+    haskell-platform \
+    cabal-install \
+    libgmp-dev \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+USER pocuser
+
+# Update Cabal
+RUN cabal update
+
+# Install Echidna from binary (faster than building from source)
+USER root
+RUN wget -O echidna.tar.gz https://github.com/crytic/echidna/releases/download/v2.2.7/echidna-2.2.7-x86_64-linux.tar.gz \
+    && tar -xvf echidna.tar.gz \
+    && ls -la \
+    && mv echidna /usr/local/bin/echidna-test \
+    && rm -rf echidna.tar.gz \
+    && chmod +x /usr/local/bin/echidna-test
+
+USER pocuser
+
+# Alternative: Install from Cabal (commented out for speed)
+# RUN cabal install echidna
+
+# Create Echidna configuration directory
+RUN mkdir -p /home/pocuser/.echidna
+
+# Copy Echidna configuration template
+COPY --chown=pocuser:pocuser configs/echidna.config.yaml /home/pocuser/.echidna/
+
+# Verify installation
+RUN echidna-test --version
+
+WORKDIR /poc-workspace
+
+CMD ["echidna-test", "--help"]

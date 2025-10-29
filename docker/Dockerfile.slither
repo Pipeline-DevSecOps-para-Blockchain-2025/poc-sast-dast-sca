@@ -1,0 +1,40 @@
+# Slither-specific Docker image
+FROM security-tools-poc:base
+
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com; marmitar <tiagodepalves@gmail.com>"
+LABEL org.opencontainers.image.description="This is a base docker for the application."
+LABEL org.opencontainers.image.version="1.0.0"
+
+USER root
+
+# Install Slither dependencies
+RUN apt-get update && apt-get install -y \
+    python3-setuptools \
+    python3-wheel \
+    && rm -rf /var/lib/apt/lists/*
+
+USER pocuser
+
+# Install Slither
+RUN pip install slither-analyzer
+
+# Install additional Solidity versions
+RUN pip install solc-select \
+    && solc-select install 0.8.19 \
+    && solc-select use 0.8.19
+
+# Create Slither configuration
+RUN mkdir -p /home/pocuser/.slither
+
+# Copy Slither configuration template (path is relative to the build context - when building from the docker/ folder use `configs/...`)
+COPY --chown=pocuser:pocuser configs/slither.config.json /home/pocuser/.slither/
+
+# Verify installation
+RUN slither --version
+
+# Set default Slither configuration
+ENV SLITHER_CONFIG="/home/pocuser/.slither/slither.config.json"
+
+WORKDIR /poc-workspace
+
+CMD ["slither", "--help"]
