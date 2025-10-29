@@ -3,7 +3,11 @@ pragma solidity ^0.8.25;
 
 import { Test } from "forge-std/Test.sol";
 
-import { IFlashLoanEtherReceiver, SideEntranceLenderPool } from "../../contracts/vulnerable/SideEntrance.sol";
+import {
+    IFlashLoanEtherReceiver,
+    ProtectedSideEntranceLenderPool,
+    SideEntranceLenderPool
+} from "../../contracts/vulnerable/SideEntrance.sol";
 
 contract SideEntranceAttack is IFlashLoanEtherReceiver {
     function attack(SideEntranceLenderPool pool) external {
@@ -61,8 +65,19 @@ contract SideEntranceChallenge is Test {
         new SideEntranceAttack().attack(pool);
     }
 
-    function _isSolved() private view {
+    function _isSolved() internal view virtual {
         assertEq(address(pool).balance, 0, "Pool still has ETH");
         assertEq(attacker.balance, INITIAL_BALANCE + ETHER_IN_POOL, "Not enough ETH in attacker account");
+    }
+}
+
+contract SideEntranceAvoided is SideEntranceChallenge {
+    constructor() {
+        pool = new ProtectedSideEntranceLenderPool();
+    }
+
+    function _isSolved() internal view override {
+        assertEq(address(pool).balance, ETHER_IN_POOL, "Not enough ETH in pool account");
+        assertEq(attacker.balance, INITIAL_BALANCE, "Attacker still got ETH");
     }
 }

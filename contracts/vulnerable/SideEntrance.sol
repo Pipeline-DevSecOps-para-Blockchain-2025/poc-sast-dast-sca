@@ -30,7 +30,7 @@ contract SideEntranceLenderPool {
     event Deposit(address indexed who, uint256 amount);
     event Withdraw(address indexed who, uint256 amount);
 
-    function deposit() external payable {
+    function deposit() public payable {
         unchecked {
             balances[msg.sender] += msg.value;
         }
@@ -46,7 +46,7 @@ contract SideEntranceLenderPool {
         SafeTransferLib.safeTransferETH(msg.sender, amount);
     }
 
-    function flashLoan(uint256 amount) external {
+    function flashLoan(uint256 amount) external virtual {
         uint256 balanceBefore = address(this).balance;
 
         IFlashLoanEtherReceiver(msg.sender).execute{ value: amount }();
@@ -54,5 +54,24 @@ contract SideEntranceLenderPool {
         if (address(this).balance < balanceBefore) {
             revert RepayFailed();
         }
+    }
+}
+
+contract ProtectedSideEntranceLenderPool is SideEntranceLenderPool {
+    function flashLoan(uint256 amount) external override {
+        IFlashLoanEtherReceiver(msg.sender).execute{ value: amount }();
+
+        // trata apenas o `balances` como source-of-truth
+        if (balances[msg.sender] < amount) {
+            revert RepayFailed();
+        }
+
+        unchecked {
+            balances[msg.sender] -= amount;
+        }
+    }
+
+    receive() external payable {
+        deposit();
     }
 }

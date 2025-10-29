@@ -6,9 +6,9 @@
     }
   },
   "lib/solady": {
-    "tag": {
-      "name": "v0.0.221",
-      "rev": "77b41d04aa0aa80d6c455d8c9a379ae067ab4c98"
+    "branch": {
+      "name": "main",
+      "rev": "73f13dd1483707ef6b4d16cb0543570b7e1715a8"
     }
   }
 }
