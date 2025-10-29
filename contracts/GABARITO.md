@@ -14,4 +14,8 @@
 
 ## [`EtherStore`](./vulnerable/ReEntrancy.sol) (Solidity by Example)
 
+| ID | Tipo de Vulnerabilidade (SWC) | Função | Linha(s) | Descrição |
+| :- | ----------------------------: | :----: | :------: | :-------- |
+| SAST-02 | [Reentrancy (SWC-107)](https://swcregistry.io/docs/SWC-107/) | [`withdraw`](./vulnerable/ReEntrancy.sol#L44-L52) | [51](./vulnerable/ReEntrancy.sol#L51) | O estado de `balances` não é atualizado antes da transferência e pode ser modificado enquanto ela acontece. |
+
 ---

