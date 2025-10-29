@@ -1,6 +1,10 @@
 # Slither-specific Docker image
 FROM security-tools-poc:base
 
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com; marmitar <tiagodepalves@gmail.com>"
+LABEL org.opencontainers.image.description="This is a base docker for the application."
+LABEL org.opencontainers.image.version="1.0.0"
+
 USER root
 
 # Install Slither dependencies

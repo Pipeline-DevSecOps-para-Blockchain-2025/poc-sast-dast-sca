@@ -1,7 +1,7 @@
 # Base Docker image for Security Tools PoC
 FROM ubuntu:22.04
 
-LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com; marmitar> <tiagodepalves@gmail.com>"
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com; marmitar <tiagodepalves@gmail.com>"
 LABEL org.opencontainers.image.description="This is a base docker for the application."
 LABEL org.opencontainers.image.version="1.0.0"
 
