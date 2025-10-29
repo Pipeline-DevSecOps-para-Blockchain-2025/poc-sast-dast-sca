@@ -22,8 +22,8 @@ RUN pip install solc-select \
 # Create Slither configuration
 RUN mkdir -p /home/pocuser/.slither
 
-# Copy Slither configuration template
-COPY --chown=pocuser:pocuser docker/configs/slither.config.json /home/pocuser/.slither/
+# Copy Slither configuration template (path is relative to the build context - when building from the docker/ folder use `configs/...`)
+COPY --chown=pocuser:pocuser configs/slither.config.json /home/pocuser/.slither/
 
 # Verify installation
 RUN slither --version

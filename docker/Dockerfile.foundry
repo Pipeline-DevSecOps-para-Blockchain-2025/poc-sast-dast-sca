@@ -1,6 +1,10 @@
 # Foundry-specific Docker image
 FROM security-tools-poc:base
 
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com; marmitar> <tiagodepalves@gmail.com>"
+LABEL org.opencontainers.image.description="This is a base docker for the application."
+LABEL org.opencontainers.image.version="1.0.0"
+
 USER pocuser
 
 # Install Foundry
@@ -19,7 +23,7 @@ RUN forge --version \
 RUN mkdir -p /home/pocuser/.foundry
 
 # Copy Foundry configuration template
-COPY --chown=pocuser:pocuser docker/configs/foundry.toml /home/pocuser/.foundry/
+COPY --chown=pocuser:pocuser configs/foundry.toml /home/pocuser/.foundry/
 
 WORKDIR /poc-workspace
 

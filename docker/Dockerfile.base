@@ -1,12 +1,16 @@
 # Base Docker image for Security Tools PoC
 FROM ubuntu:22.04
 
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com; marmitar> <tiagodepalves@gmail.com>"
+LABEL org.opencontainers.image.description="This is a base docker for the application."
+LABEL org.opencontainers.image.version="1.0.0"
+
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV NODE_VERSION=18.17.0
 
-# Install system dependencies
+# Install system dependencies (do not install nodejs/npm here; installed from NodeSource below)
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
@@ -15,8 +19,6 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-dev \
-    nodejs \
-    npm \
     software-properties-common \
     apt-transport-https \
     ca-certificates \
@@ -24,9 +26,11 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js (specific version)
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs
+# Install Node.js (specific version) from NodeSource
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get update \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Rust and Cargo (for Foundry)
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
