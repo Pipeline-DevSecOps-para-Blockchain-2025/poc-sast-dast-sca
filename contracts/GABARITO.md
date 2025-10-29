@@ -21,3 +21,9 @@
 ### Correção: [`EtherStoreGuarded`](./vulnerable/ReEntrancy.sol#L60-L78)
 
 ---
+
+## [`ERC20`](./clean/ERC20.sol)
+
+Sem vulnerabilidades conhecidas.
+
+---

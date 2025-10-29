@@ -5,6 +5,12 @@
       "rev": "100b0d756adda67bc70aab816fa5a1a95dcf78b6"
     }
   },
+  "lib/openzeppelin-contracts": {
+    "branch": {
+      "name": "master",
+      "rev": "8d6294fc732d9b9beb079efc6ec0e04f0ea5b282"
+    }
+  },
   "lib/solady": {
     "branch": {
       "name": "main",
