@@ -4,5 +4,11 @@
       "name": "master",
       "rev": "100b0d756adda67bc70aab816fa5a1a95dcf78b6"
     }
+  },
+  "lib/solady": {
+    "tag": {
+      "name": "v0.0.221",
+      "rev": "77b41d04aa0aa80d6c455d8c9a379ae067ab4c98"
+    }
   }
 }
