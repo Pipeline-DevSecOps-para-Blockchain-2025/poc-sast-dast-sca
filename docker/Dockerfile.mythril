@@ -1,0 +1,29 @@
+# Mythril-specific Docker image
+FROM security-tools-poc:base
+
+USER root
+
+# Install Mythril dependencies
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libffi-dev \
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+USER pocuser
+
+# Install Mythril
+RUN pip install mythril
+
+# Install Z3 solver (required for symbolic execution)
+RUN pip install z3-solver
+
+# Verify installation
+RUN myth version
+
+# Create Mythril workspace
+RUN mkdir -p /home/pocuser/.mythril
+
+WORKDIR /poc-workspace
+
+CMD ["myth", "--help"]

@@ -1,0 +1,32 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build Docker image (slither)') {
+      steps {
+        script {
+          // Build an image using the provided Dockerfile.slither
+          def img = docker.build("slither:latest", "-f Dockerfile.slither .")
+          // Run slither inside the image. Adjust path 'contracts' as needed.
+          img.inside {
+            sh 'slither --version || true'
+            // Run slither on the repository's contracts folder if it exists
+            sh 'if [ -d "contracts" ]; then slither contracts || true; else echo "No contracts/ folder found. Adjust the path to your Solidity sources."; fi'
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      echo 'Pipeline finished.'
+    }
+  }
+}

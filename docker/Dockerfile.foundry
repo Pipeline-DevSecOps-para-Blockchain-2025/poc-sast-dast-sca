@@ -1,0 +1,26 @@
+# Foundry-specific Docker image
+FROM security-tools-poc:base
+
+USER pocuser
+
+# Install Foundry
+RUN curl -L https://foundry.paradigm.xyz | bash \
+    && /home/pocuser/.foundry/bin/foundryup
+
+# Add Foundry to PATH
+ENV PATH="/home/pocuser/.foundry/bin:$PATH"
+
+# Verify installation
+RUN forge --version \
+    && cast --version \
+    && anvil --version
+
+# Create Foundry workspace
+RUN mkdir -p /home/pocuser/.foundry
+
+# Copy Foundry configuration template
+COPY --chown=pocuser:pocuser docker/configs/foundry.toml /home/pocuser/.foundry/
+
+WORKDIR /poc-workspace
+
+CMD ["forge", "--help"]

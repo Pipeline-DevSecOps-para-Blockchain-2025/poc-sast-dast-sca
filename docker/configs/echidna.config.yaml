@@ -1,0 +1,77 @@
+# Echidna Configuration for Security Tools PoC
+
+# Test mode: assertion, property, or optimization
+testMode: assertion
+
+# Number of test sequences to generate
+testLimit: 50000
+
+# Number of shrinking attempts
+shrinkLimit: 5000
+
+# Maximum length of a test sequence
+seqLen: 100
+
+# Contract deployment configuration
+contractAddr: "0x00a329c0648769a73afac7f9381e08fb43dbea72"
+deployer: "0x00a329c0648769a73afac7f9381e08fb43dbea70"
+
+# Sender addresses for transactions
+sender: 
+  - "0x10000"
+  - "0x20000" 
+  - "0x00a329c0648769a73afac7f9381e08fb43dbea70"
+
+# Primary sender address
+psender: "0x00a329c0648769a73afac7f9381e08fb43dbea70"
+
+# Coverage analysis
+coverage: true
+
+# Directory to save corpus
+corpusDir: "corpus"
+
+# Timeout for each test (seconds)
+timeout: 300
+
+# Gas limit for transactions
+gasLimit: 12500000
+
+# Gas price
+gasPrice: 20000000000
+
+# Balance for test accounts (in wei)
+balanceAddr: 0xffffffffffffffffffffffffffffffffffffffff
+balanceContract: 0xffffffffffffffffffffffffffffffffffffffff
+
+# Solidity compiler settings
+solcArgs: "--optimize --optimize-runs 200"
+solcLibs: []
+
+# Crytic compile configuration
+cryticArgs: []
+
+# Multi-ABI mode
+multiAbi: false
+
+# Seed for random number generation
+seed: null
+
+# Dictionary for fuzzing
+dictionary: []
+
+# Prefix for property functions
+prefix: "echidna_"
+
+# Property testing configuration
+propMaxGas: 12500000
+testMaxGas: 12500000
+
+# Shrinking configuration
+shrinkMode: true
+
+# Format for output
+format: "text"
+
+# Quiet mode
+quiet: false
