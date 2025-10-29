@@ -47,7 +47,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v6
         with:
-          context: ./tools/slither
+          context: ./docker/slither
           push: true
           build-args: |
             SLITHER_VERSION=${{ github.event.inputs.slither-version }}
