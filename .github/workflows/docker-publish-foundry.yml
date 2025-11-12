@@ -1,0 +1,48 @@
+name: Build Foundry Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      foundry-version:
+        description: 'Foundry version'
+        required: true
+      latest:
+        description: 'Tag image as latest'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set image name
+        id: image_name
+        run: echo "image_name=ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')/foundry" >> $GITHUB_OUTPUT
+
+      - name: Log in to the GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker/foundry
+          push: true
+          build-args: |
+            FOUNDRY_VERSION=${{ github.event.inputs.foundry-version }}
+          tags: |
+            ${{ steps.image_name.outputs.image_name }}:${{ github.event.inputs.foundry-version }}
+            ${{ github.event.inputs.latest && format('{0}:latest', steps.image_name.outputs.image_name) || '' }}

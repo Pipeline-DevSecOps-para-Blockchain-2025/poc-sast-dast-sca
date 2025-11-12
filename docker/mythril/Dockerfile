@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ## Builder
-FROM python:3.14-alpine3.22 AS mythril-builder
+FROM python:3.14-alpine3.22 AS builder
 
 RUN --mount=type=cache,id=apk,target=/var/cache/apk \
     apk add --cache-dir=/var/cache/apk \
@@ -21,9 +21,9 @@ RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
     && pip install --force-reinstall --compile 'setuptools<67.5.0'
 
 ## Runtime
-FROM python:3.14-alpine3.22 AS mythril
-LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>" 
-LABEL org.opencontainers.image.description="Static analysis tooling for EVM bytecode (Mythril)" 
+FROM python:3.14-alpine3.22 AS runtime
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>"
+LABEL org.opencontainers.image.description="Static analysis tooling for EVM bytecode (Mythril)"
 LABEL org.opencontainers.image.version="1.0.0"
 
 RUN --mount=type=cache,id=apk,target=/var/cache/apk \
@@ -33,8 +33,8 @@ RUN --mount=type=cache,id=apk,target=/var/cache/apk \
         libffi gmp libgomp
 
 ENV PIP_ROOT_USER_ACTION=ignore PIP_DISABLE_PIP_VERSION_CHECK=1
-COPY --from=mythril-builder /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
-COPY --from=mythril-builder /usr/local/bin /usr/local/bin
+COPY --from=builder /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 RUN addgroup -S mythril \
     && adduser -S -h /mythril -G mythril -s /sbin/nologin mythril \

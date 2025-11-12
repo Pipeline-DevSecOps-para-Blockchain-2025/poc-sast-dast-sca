@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ## Builder
-FROM python:3.14-alpine3.22 AS slither-builder
+FROM python:3.14-alpine3.22 AS builder
 
 RUN --mount=type=cache,id=apk,target=/var/cache/apk \
     apk add --cache-dir=/var/cache/apk \
@@ -26,8 +26,8 @@ RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
     && mkdir -p /out/bin \
     && install -m 755 "$(command -v solc)" /out/bin/solc
 
-## Image
-FROM python:3.14-alpine3.22 AS slither
+## Runtime
+FROM python:3.14-alpine3.22 AS runtime
 LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>"
 LABEL org.opencontainers.image.description="Static analysis tooling for Solidity (Slither)"
 LABEL org.opencontainers.image.version="1.0.0"
@@ -38,10 +38,10 @@ RUN --mount=type=cache,id=apk,target=/var/cache/apk \
         gcompat libgcc libstdc++ \
         libffi gmp
 
-COPY --from=slither-builder /out/bin/solc /usr/local/bin/solc
+COPY --from=builder /out/bin/solc /usr/local/bin/solc
 
 ENV PIP_ROOT_USER_ACTION=ignore PIP_DISABLE_PIP_VERSION_CHECK=1
-RUN --mount=type=bind,from=slither-builder,source=/out/wheels,target=/tmp/wheels \
+RUN --mount=type=bind,from=builder,source=/out/wheels,target=/tmp/wheels \
     pip install --no-cache-dir --no-index \
         --find-links=/tmp/wheels --compile \
         slither-analyzer
