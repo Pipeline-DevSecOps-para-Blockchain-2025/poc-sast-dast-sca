@@ -135,7 +135,7 @@ pipeline {
                                     .join(' ')
 
                                 def exitCode = sh(
-                                    script: "myth analyze --solc-json .solc-config.json ${files} --outform jsonv2 | tee reports/mythril.json",
+                                    script: "myth analyze --solv 0.8.26 --solc-json .solc-config.json ${files} --outform jsonv2 | tee reports/mythril.json",
                                     returnStatus: true
                                 )
 

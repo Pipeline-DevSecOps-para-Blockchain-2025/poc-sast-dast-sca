@@ -7,7 +7,7 @@ import {
     IFlashLoanEtherReceiver,
     ProtectedSideEntranceLenderPool,
     SideEntranceLenderPool
-} from "../../contracts/vulnerable/SideEntrance.sol";
+} from "../../contracts/vulnerable/FlashLoan.sol";
 
 contract SideEntranceAttack is IFlashLoanEtherReceiver {
     function attack(SideEntranceLenderPool pool) external {
