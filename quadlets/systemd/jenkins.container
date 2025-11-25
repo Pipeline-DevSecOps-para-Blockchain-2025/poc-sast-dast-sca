@@ -12,11 +12,10 @@ PublishPort=8080:8080
 # Exposed for Jenkins agents
 PublishPort=50000:50000
 # Jenkins data
-Environment='JAVA_OPTS=-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.LAUNCH_DIAGNOSTICS=true -Dnew-build-page.flag.defaultValue=true'
 Volume=/var/jenkins_home:/var/jenkins_home
 # Docker plugin access
 Environment=DOCKER_HOST=unix:///var/run/docker.sock
-Volume=/run/user/1000/podman/podman.sock:/var/run/docker.sock
+Volume=%t/podman/podman.sock:/var/run/docker.sock
 
 [Service]
 Restart=always
