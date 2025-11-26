@@ -1,3 +1,9 @@
+def images = [
+    foundry: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/foundry:1.4.4',
+    slither: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/slither:0.11.3',
+    mythril: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/mythril:0.24.8',
+]
+
 pipeline {
     agent any
     options {
@@ -19,7 +25,7 @@ pipeline {
         stage('Build Contracts') {
             agent {
                 docker {
-                    image 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/foundry:1.4.4'
+                    image images.foundry
                     reuseNode true
                 }
             }
@@ -33,7 +39,7 @@ pipeline {
                 stage('Slither') {
                     agent {
                         docker {
-                            image 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/slither:0.11.3'
+                            image images.slither
                             args '--entrypoint=' // shell for Docker Pipeline
                             reuseNode true
                         }
@@ -49,7 +55,7 @@ pipeline {
                 stage('Mythril') {
                     agent {
                         docker {
-                            image 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/mythril:0.24.8'
+                            image images.mythril
                             args '--entrypoint=' // shell for Docker Pipeline
                             reuseNode true
                         }
