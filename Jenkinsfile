@@ -1,7 +1,8 @@
 def images = [
     foundry: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/foundry:1.4.4',
     slither: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/slither:0.11.3',
-    mythril: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/mythril:0.24.8',
+    // FIXME: mythril: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/mythril:0.24.8',
+    mythril: 'docker.io/mythril/myth:0.24.8',
 ]
 
 def reportCheck(Closure body) {
@@ -10,9 +11,16 @@ def reportCheck(Closure body) {
             body()
             publishChecks(conclusion: 'SUCCESS')
         } catch (err) {
-            publishChecks(conclusion: 'FAILURE', details: "${err}")
+            publishChecks(conclusion: 'FAILURE', summary: "${err}")
         }
     }
+}
+
+@NonCPS
+def extractSettingsJson(String json) {
+    def config = new groovy.json.JsonSlurper().parseText(json)
+    def settings = [remappings: config.remappings]
+    return groovy.json.JsonOutput.toJson(settings)
 }
 
 pipeline {
@@ -43,11 +51,12 @@ pipeline {
             steps {
                 // --build-info: additional output files, used by Slither
                 sh 'forge build --build-info'
+                sh 'forge config --json > .forge-config.json'
             }
         }
         stage('Analysis') {
             parallel {
-                stage('Foge Format') {
+                stage('Forge Format') {
                     agent {
                         docker {
                             image images.foundry
@@ -60,7 +69,7 @@ pipeline {
                         }
                     }
                 }
-                stage('Foge Lint') {
+                stage('Forge Lint') {
                     agent {
                         docker {
                             image images.foundry
@@ -114,9 +123,25 @@ pipeline {
                     }
                     steps {
                         reportCheck {
+                            script {
+                                def config = readFile file: '.forge-config.json'
+                                writeFile file: '.solc-config.json', text: extractSettingsJson(config)
+                            }
                             sh 'mkdir -p reports'
-                            // FIXME: handle filenames with spaces and line breaks
-                            sh 'myth analyze $(find contracts/ -name \'*.sol\' -print) --outform jsonv2 > reports/mythril.json'
+                            script {
+                                def files = sh(script: "find contracts/ -name '*.sol' -print0", returnStdout: true)
+                                    .split('\0')
+                                    .findAll { it }
+                                    .collect { file -> "'" + file.replace("'", "'\"'\"'") + "'" }
+                                    .join(' ')
+
+                                def exitCode = sh(
+                                    script: "myth analyze --solc-json .solc-config.json ${files} --outform jsonv2 | tee reports/mythril.json",
+                                    returnStatus: true
+                                )
+
+                                println "Mythril found issues: ${exitCode}"
+                            }
                             stash name: 'mythril-report', includes: 'reports/mythril.json', allowEmpty: true
                         }
                     }
