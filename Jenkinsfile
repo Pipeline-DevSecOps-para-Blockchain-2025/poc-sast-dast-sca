@@ -36,6 +36,45 @@ pipeline {
         }
         stage('Analysis') {
             parallel {
+                stage('Foge Format') {
+                    agent {
+                        docker {
+                            image images.foundry
+                            reuseNode true
+                        }
+                    }
+                    steps {
+                        withChecks(name: 'Jenkins CI', includeStage: true) {
+                            sh 'forge fmt --check'
+                        }
+                    }
+                }
+                stage('Foge Lint') {
+                    agent {
+                        docker {
+                            image images.foundry
+                            reuseNode true
+                        }
+                    }
+                    steps {
+                        withChecks(name: 'Jenkins CI', includeStage: true) {
+                            sh 'forge lint'
+                        }
+                    }
+                }
+                stage('Foge Tests') {
+                    agent {
+                        docker {
+                            image images.foundry
+                            reuseNode true
+                        }
+                    }
+                    steps {
+                        withChecks(name: 'Jenkins CI', includeStage: true) {
+                            sh 'forge test -vvv'
+                        }
+                    }
+                }
                 stage('Slither') {
                     agent {
                         docker {
