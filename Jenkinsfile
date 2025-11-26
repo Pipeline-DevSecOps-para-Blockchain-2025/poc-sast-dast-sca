@@ -88,7 +88,7 @@ pipeline {
                         // --ignore-compile: already compiled with build info
                         // --no-fail-pedantic: only fail in case of runtime issues
                         sh 'slither --ignore-compile --no-fail-pedantic . --json reports/slither.json'
-                        stash name: 'slither-report', includes: 'reports/slither.json'
+                        stash name: 'slither-report', includes: 'reports/slither.json', allowEmpty: true
                     }
                 }
                 stage('Mythril') {
@@ -103,7 +103,7 @@ pipeline {
                         sh 'mkdir -p reports'
                         // FIXME: handle filenames with spaces and line breaks
                         sh 'myth analyze $(find contracts/ -name \'*.sol\' -print) --outform jsonv2 > reports/mythril.json'
-                        stash name: 'mythril-report', includes: 'reports/mythril.json'
+                        stash name: 'mythril-report', includes: 'reports/mythril.json', allowEmpty: true
                     }
                 }
             }
@@ -111,11 +111,10 @@ pipeline {
     }
     post {
         always {
-            cleanWs()
-            // TODO: stash may not be available
-            unstash 'slither-report'
-            unstash 'mythril-report'
+            catchError { unstash 'slither-report' }
+            catchError { unstash 'mythril-report' }
             archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: true
+            cleanWs()
         }
     }
 }
