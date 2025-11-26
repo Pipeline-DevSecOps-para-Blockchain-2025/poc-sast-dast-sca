@@ -4,6 +4,17 @@ def images = [
     mythril: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/mythril:0.24.8',
 ]
 
+def reportCheck(Closure body) {
+    withChecks(name: 'Jenkins CI', includeStage: true) {
+        try {
+            body()
+            publishChecks(conclusion: 'SUCCESS')
+        } catch (err) {
+            publishChecks(conclusion: 'FAILURE', details: "${err}")
+        }
+    }
+}
+
 pipeline {
     agent any
     options {
@@ -44,7 +55,7 @@ pipeline {
                         }
                     }
                     steps {
-                        withChecks(name: 'Jenkins CI', includeStage: true) {
+                        reportCheck {
                             sh 'forge fmt --check'
                         }
                     }
@@ -57,7 +68,7 @@ pipeline {
                         }
                     }
                     steps {
-                        withChecks(name: 'Jenkins CI', includeStage: true) {
+                        reportCheck {
                             sh 'forge lint'
                         }
                     }
@@ -70,7 +81,7 @@ pipeline {
                         }
                     }
                     steps {
-                        withChecks(name: 'Jenkins CI', includeStage: true) {
+                        reportCheck {
                             sh 'forge test -vvv'
                         }
                     }
@@ -84,11 +95,13 @@ pipeline {
                         }
                     }
                     steps {
-                        sh 'mkdir -p reports'
-                        // --ignore-compile: already compiled with build info
-                        // --no-fail-pedantic: only fail in case of runtime issues
-                        sh 'slither --ignore-compile --no-fail-pedantic . --json reports/slither.json'
-                        stash name: 'slither-report', includes: 'reports/slither.json', allowEmpty: true
+                        reportCheck {
+                            sh 'mkdir -p reports'
+                            // --ignore-compile: already compiled with build info
+                            // --no-fail-pedantic: only fail in case of runtime issues
+                            sh 'slither --ignore-compile --no-fail-pedantic . --json reports/slither.json'
+                            stash name: 'slither-report', includes: 'reports/slither.json', allowEmpty: true
+                        }
                     }
                 }
                 stage('Mythril') {
@@ -100,10 +113,12 @@ pipeline {
                         }
                     }
                     steps {
-                        sh 'mkdir -p reports'
-                        // FIXME: handle filenames with spaces and line breaks
-                        sh 'myth analyze $(find contracts/ -name \'*.sol\' -print) --outform jsonv2 > reports/mythril.json'
-                        stash name: 'mythril-report', includes: 'reports/mythril.json', allowEmpty: true
+                        reportCheck {
+                            sh 'mkdir -p reports'
+                            // FIXME: handle filenames with spaces and line breaks
+                            sh 'myth analyze $(find contracts/ -name \'*.sol\' -print) --outform jsonv2 > reports/mythril.json'
+                            stash name: 'mythril-report', includes: 'reports/mythril.json', allowEmpty: true
+                        }
                     }
                 }
             }
