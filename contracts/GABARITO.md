@@ -52,6 +52,16 @@
 
 ---
 
+## [`Lotto`](./vulnerable/UncheckedCall.sol) (sigp solidity-security-blog)
+
+| OWASP | SWC | Função | Linha(s) | Descrição |
+| :---: | ----------------------------: | :----: | :------: | :-------- |
+| [SC06:2025][SC06:2025] | [SWC-104][SWC-104] | [`sendToWinner`](./vulnerable/UncheckedCall.sol#L16-L20) | [18](./vulnerable/UncheckedCall.sol#L18) | Retorno de `winner.send` é ignorado; se o envio falha (fallback cara, falta de gas), `payedOut` vira `true` e os fundos ficam presos. |
+
+### Correção: [`LottoChecked`](./vulnerable/UncheckedCall.sol#L28-L34)
+
+---
+
 ## [`SideEntranceLenderPool`](./vulnerable/FlashLoan.sol) (Damn Vulnerable DeFi - Challenge 4)
 
 | OWASP  | SWC | Função | Linha(s) | Descrição |
@@ -83,9 +93,11 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 [SC03:2025]: https://scs.owasp.org/sctop10/SC03-LogicErrors/ "SC03:2025 Logic Errors"
 [SC04:2025]: https://scs.owasp.org/sctop10/SC04-LackOfInputValidation/ "SC04:2025 Lack of Input Validation"
 [SC05:2025]: https://scs.owasp.org/sctop10/SC05-Reentrancy/ "SC05:2025 Reentrancy"
+[SC06:2025]: https://scs.owasp.org/sctop10/SC06-UncheckedExternalCalls/ "SC06:2025 Unchecked External Calls"
 [SC07:2025]: https://scs.owasp.org/sctop10/SC07-FlashLoanAttacks/ "SC07:2025 Flash Loan Attacks"
 [SC10:2025]: https://scs.owasp.org/sctop10/SC10-DenailOfService/ "SC10:2025 Denial Of Service"
 
+[SWC-104]: https://swcregistry.io/docs/SWC-104/ "SWC-104: Unchecked Call Return Value"
 [SWC-107]: https://swcregistry.io/docs/SWC-107/ "SWC-107: Reentrancy"
 [SWC-113]: https://swcregistry.io/docs/SWC-113/ "SWC-113: DoS with Failed Call"
 [SWC-114]: https://swcregistry.io/docs/SWC-114/ "SWC-114: Transaction Order Dependence"

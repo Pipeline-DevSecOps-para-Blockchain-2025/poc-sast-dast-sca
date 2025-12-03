@@ -1,6 +1,6 @@
 /**
  * From DeFiVulnLabs: https://github.com/SunWeb3Sec/DeFiVulnLabs
- * Source: https://github.com/SunWeb3Sec/DeFiVulnLabs/blob/main/src/test/empty-loop.sol
+ * Source: https://github.com/SunWeb3Sec/DeFiVulnLabs/blob/f61f6ee5/src/test/empty-loop.sol
  */
 
 // SPDX-License-Identifier: MIT
