@@ -22,6 +22,16 @@
 
 ---
 
+## [`Denial`](./vulnerable/DenialOfService.sol) (Ethernaut)
+
+| OWASP | SWC | Função | Linha(s) | Descrição |
+| :---: | ----------------------------: | :----: | :------: | :-------- |
+| [SC10:2025][SC10:2025] | [SWC-113][SWC-113] | [`withdraw`](./vulnerable/DenialOfService.sol#L21-L31) | [26](./vulnerable/DenialOfService.sol#L26) | Erros do `partner` impossibilitam o `owner` de recuperar fundos. |
+
+### Correção: [`Undeniable`](./vulnerable/DenialOfService.sol#L42-L52)
+
+---
+
 ## [`ERC20`](./clean/ERC20.sol)
 
 Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
@@ -30,6 +40,8 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 
 [SC05:2025]: https://scs.owasp.org/sctop10/SC05-Reentrancy/ "SC05:2025 Reentrancy"
 [SC07:2025]: https://scs.owasp.org/sctop10/SC07-FlashLoanAttacks/ "SC07:2025 Flash Loan Attacks"
+[SC10:2025]: https://scs.owasp.org/sctop10/SC10-DenailOfService/ "SC10:2025 Denial Of Service"
 
 [SWC-107]: https://swcregistry.io/docs/SWC-107/ "SWC-107: Reentrancy"
+[SWC-113]: https://swcregistry.io/docs/SWC-113/ "SWC-113: DoS with Failed Call"
 [SWC-132]: https://swcregistry.io/docs/SWC-132/ "SWC-132: Unexpected Ether balance"
