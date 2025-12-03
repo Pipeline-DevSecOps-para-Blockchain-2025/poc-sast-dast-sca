@@ -72,6 +72,16 @@
 
 ---
 
+## [`InsecureMoonToken`](./vulnerable/IntegerOverflow.sol) (serial-coder)
+
+| OWASP | SWC | Função | Linha(s) | Descrição |
+| :---: | ----------------------------: | :----: | :------: | :-------- |
+| [SC08:2025][SC08:2025] | [SWC-101][SWC-101] | [`buy`](./vulnerable/IntegerOverflow.sol#L31-L35) / [`sell`](./vulnerable/IntegerOverflow.sol#L37-L44) | [34](./vulnerable/IntegerOverflow.sol#L34), [40](./vulnerable/IntegerOverflow.sol#L40) | Multiplicação e soma sem checagem podem dar overflow, permitindo pagar menos ou sacar mais tokens/ETH. |
+
+### Correção: [`FixedMoonToken`](./vulnerable/IntegerOverflow.sol#L66-L105)
+
+---
+
 ## [`Denial`](./vulnerable/DenialOfService.sol) (Ethernaut)
 
 | OWASP | SWC | Função | Linha(s) | Descrição |
@@ -95,8 +105,10 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 [SC05:2025]: https://scs.owasp.org/sctop10/SC05-Reentrancy/ "SC05:2025 Reentrancy"
 [SC06:2025]: https://scs.owasp.org/sctop10/SC06-UncheckedExternalCalls/ "SC06:2025 Unchecked External Calls"
 [SC07:2025]: https://scs.owasp.org/sctop10/SC07-FlashLoanAttacks/ "SC07:2025 Flash Loan Attacks"
+[SC08:2025]: https://scs.owasp.org/sctop10/SC08-IntegerOverflowUnderflow/ "SC08:2025 Integer Overflow/Underflow"
 [SC10:2025]: https://scs.owasp.org/sctop10/SC10-DenailOfService/ "SC10:2025 Denial Of Service"
 
+[SWC-101]: https://swcregistry.io/docs/SWC-101/ "SWC-101: Integer Overflow and Underflow"
 [SWC-104]: https://swcregistry.io/docs/SWC-104/ "SWC-104: Unchecked Call Return Value"
 [SWC-107]: https://swcregistry.io/docs/SWC-107/ "SWC-107: Reentrancy"
 [SWC-113]: https://swcregistry.io/docs/SWC-113/ "SWC-113: DoS with Failed Call"

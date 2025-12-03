@@ -30,7 +30,7 @@ Toda a análise de vulnerabilidades está no diretório `contracts/`:
 | SC05:2025 | Reentrancy Attacks             | [ReEntrancy.sol](./contracts/vulnerable/ReEntrancy.sol)                 |   ✅   |
 | SC06:2025 | Unchecked External Calls       | [UncheckedCall.sol](./contracts/vulnerable/UncheckedCall.sol)           |   ✅   |
 | SC07:2025 | Flash Loan Attacks             | [FlashLoan.sol](./contracts/vulnerable/FlashLoan.sol)                   |   ✅   |
-| SC08:2025 | Integer Overflow/Underflow     | IntegerOverflow.sol                                                     |   ❌   |
+| SC08:2025 | Integer Overflow/Underflow     | [IntegerOverflow.sol](./contracts/vulnerable/IntegerOverflow.sol)       |   ✅   |
 | SC09:2025 | Insecure Randomness            | InsecureRandomness.sol                                                  |   ❌   |
 | SC10:2025 | Denial of Service (DoS)        | [DenialOfService.sol](./contracts/vulnerable/DenialOfService.sol)       |   ✅   |
 
