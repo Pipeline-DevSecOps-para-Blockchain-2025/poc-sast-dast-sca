@@ -22,6 +22,16 @@
 
 ---
 
+## [`VulnerableBank`](./vulnerable/LogicError.sol) (DeFiVulnLabs)
+
+| OWASP | SWC | Função | Linha(s) | Descrição |
+| :---: | ----------------------------: | :----: | :------: | :-------- |
+| [SC03:2025][SC03:2025] | [SWC-124][SWC-124] | [`unlockToken`](./vulnerable/LogicError.sol#L63-L78) | [70](./vulnerable/LogicError.sol#L70) | Ausência de cheque completo permite múltiplos saques: `block.timestamp` não é exigido antes da transferência e `locker.hasLockedTokens` não é invalidado, permitindo drenar o mesmo locker repetidas vezes antes do vencimento. |
+
+### Correção: [`FixedeBank`](./vulnerable/LogicError.sol#L81-L125)
+
+---
+
 ## [`EtherStore`](./vulnerable/ReEntrancy.sol) (Solidity by Example)
 
 | OWASP | SWC | Função | Linha(s) | Descrição |
@@ -60,6 +70,7 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 
 [SC01:2025]: https://scs.owasp.org/sctop10/SC01-AccessControlVulnerabilities/ "SC01:2025 Access Control Vulnerabilities"
 [SC02:2025]: https://scs.owasp.org/sctop10/SC02-PriceOracleManipulation/ "SC02:2025 Price Oracle Manipulation"
+[SC03:2025]: https://scs.owasp.org/sctop10/SC03-LogicErrors/ "SC03:2025 Logic Errors"
 [SC05:2025]: https://scs.owasp.org/sctop10/SC05-Reentrancy/ "SC05:2025 Reentrancy"
 [SC07:2025]: https://scs.owasp.org/sctop10/SC07-FlashLoanAttacks/ "SC07:2025 Flash Loan Attacks"
 [SC10:2025]: https://scs.owasp.org/sctop10/SC10-DenailOfService/ "SC10:2025 Denial Of Service"
@@ -68,4 +79,5 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 [SWC-113]: https://swcregistry.io/docs/SWC-113/ "SWC-113: DoS with Failed Call"
 [SWC-114]: https://swcregistry.io/docs/SWC-114/ "SWC-114: Transaction Order Dependence"
 [SWC-115]: https://swcregistry.io/docs/SWC-115/ "SWC-115: Authorization through tx.origin"
+[SWC-124]: https://swcregistry.io/docs/SWC-124/ "SWC-124: Write to Arbitrary Storage Location"
 [SWC-132]: https://swcregistry.io/docs/SWC-132/ "SWC-132: Unexpected Ether balance"
