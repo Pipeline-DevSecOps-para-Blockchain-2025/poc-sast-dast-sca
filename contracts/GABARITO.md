@@ -2,6 +2,16 @@
 
 ---
 
+## [`Wallet`](./vulnerable/AccessControl.sol) (DeFiVulnLabs)
+
+| OWASP | SWC | Função | Linha(s) | Descrição |
+| :---: | ----------------------------: | :----: | :------: | :-------- |
+| [SC01:2025][SC01:2025] | [SWC-115][SWC-115] | [`transfer`](./vulnerable/AccessControl.sol#L16-L22) | [18](./vulnerable/AccessControl.sol#L18) | Autorização baseada em `tx.origin` permite phishing: um contrato malicioso pode fazer o usuário dono disparar `transfer` e drenar fundos. |
+
+### Correção: [`ControlledWallet`](./vulnerable/AccessControl.sol#L25-L32)
+
+---
+
 ## [`EtherStore`](./vulnerable/ReEntrancy.sol) (Solidity by Example)
 
 | OWASP | SWC | Função | Linha(s) | Descrição |
@@ -38,10 +48,12 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 
 ---
 
+[SC01:2025]: https://scs.owasp.org/sctop10/SC01-AccessControlVulnerabilities/ "SC01:2025 Access Control Vulnerabilities"
 [SC05:2025]: https://scs.owasp.org/sctop10/SC05-Reentrancy/ "SC05:2025 Reentrancy"
 [SC07:2025]: https://scs.owasp.org/sctop10/SC07-FlashLoanAttacks/ "SC07:2025 Flash Loan Attacks"
 [SC10:2025]: https://scs.owasp.org/sctop10/SC10-DenailOfService/ "SC10:2025 Denial Of Service"
 
 [SWC-107]: https://swcregistry.io/docs/SWC-107/ "SWC-107: Reentrancy"
 [SWC-113]: https://swcregistry.io/docs/SWC-113/ "SWC-113: DoS with Failed Call"
+[SWC-115]: https://swcregistry.io/docs/SWC-115/ "SWC-115: Authorization through tx.origin"
 [SWC-132]: https://swcregistry.io/docs/SWC-132/ "SWC-132: Unexpected Ether balance"
