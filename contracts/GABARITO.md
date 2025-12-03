@@ -82,6 +82,16 @@
 
 ---
 
+## [`GuessTheRandomNumber`](./vulnerable/InsecureRandomness.sol) (Solidity by Example)
+
+| OWASP | SWC | Função | Linha(s) | Descrição |
+| :---: | ----------------------------: | :----: | :------: | :-------- |
+| [SC09:2025][SC09:2025] | [SWC-120][SWC-120] | [`guess`](./vulnerable/InsecureRandomness.sol#L36-L47) | [37](./vulnerable/InsecureRandomness.sol#L37) | Aleatoriedade previsível: usa `blockhash` e `block.timestamp`, que são públicos e manipuláveis, permitindo prever o número e drenar o pote. |
+
+### Correção: Use VRF (p.ex., Chainlink) ou commit-reveal; nunca derive "random" de campos do bloco.
+
+---
+
 ## [`Denial`](./vulnerable/DenialOfService.sol) (Ethernaut)
 
 | OWASP | SWC | Função | Linha(s) | Descrição |
@@ -106,6 +116,7 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 [SC06:2025]: https://scs.owasp.org/sctop10/SC06-UncheckedExternalCalls/ "SC06:2025 Unchecked External Calls"
 [SC07:2025]: https://scs.owasp.org/sctop10/SC07-FlashLoanAttacks/ "SC07:2025 Flash Loan Attacks"
 [SC08:2025]: https://scs.owasp.org/sctop10/SC08-IntegerOverflowUnderflow/ "SC08:2025 Integer Overflow/Underflow"
+[SC09:2025]: https://scs.owasp.org/sctop10/SC09-InsecureRandomness/ "SC09:2025 Insecure Randomness"
 [SC10:2025]: https://scs.owasp.org/sctop10/SC10-DenailOfService/ "SC10:2025 Denial Of Service"
 
 [SWC-101]: https://swcregistry.io/docs/SWC-101/ "SWC-101: Integer Overflow and Underflow"
@@ -114,6 +125,7 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 [SWC-113]: https://swcregistry.io/docs/SWC-113/ "SWC-113: DoS with Failed Call"
 [SWC-114]: https://swcregistry.io/docs/SWC-114/ "SWC-114: Transaction Order Dependence"
 [SWC-115]: https://swcregistry.io/docs/SWC-115/ "SWC-115: Authorization through tx.origin"
+[SWC-120]: https://swcregistry.io/docs/SWC-120/ "SWC-120: Weak Sources of Randomness from Chain Attributes"
 [SWC-122]: https://swcregistry.io/docs/SWC-122/ "SWC-122: Lack of Proper Validation"
 [SWC-123]: https://swcregistry.io/docs/SWC-123/ "SWC-123: Requirement Violation"
 [SWC-132]: https://swcregistry.io/docs/SWC-132/ "SWC-132: Unexpected Ether balance"
