@@ -1,6 +1,6 @@
 /**
  * From OpenZeppelin: https://github.com/OpenZeppelin/openzeppelin-contracts
- * Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.5.0-rc.1/contracts/token/ERC20/ERC20.sol
+ * Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.5.0/contracts/token/ERC20/ERC20.sol
  */
 
 // SPDX-License-Identifier: MIT
@@ -30,7 +30,7 @@ import { Context } from "@openzeppelin/contracts/utils/Context.sol";
  * conventional and does not conflict with the expectations of ERC-20
  * applications.
  */
-abstract contract ERC20 is Context, IERC20, IERC20Metadata, IERC20Errors {
+contract ERC20 is Context, IERC20, IERC20Metadata, IERC20Errors {
     mapping(address account => uint256) private _balances;
 
     mapping(address account => mapping(address spender => uint256)) private _allowances;

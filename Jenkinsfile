@@ -151,10 +151,10 @@ pipeline {
     }
     post {
         always {
+            cleanWs()
             catchError { unstash 'slither-report' }
             catchError { unstash 'mythril-report' }
-            archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: true
-            cleanWs()
+            archiveArtifacts artifacts: 'reports/*', allowEmptyArchive: true
         }
     }
 }
