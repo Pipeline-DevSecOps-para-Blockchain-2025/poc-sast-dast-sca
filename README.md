@@ -24,7 +24,7 @@ Toda a análise de vulnerabilidades está no diretório `contracts/`:
 |   OWASP   | Tipo                           | Arquivo                                                                 | Status |
 | :-------: | :----------------------------- | :---------------------------------------------------------------------- | :----: |
 | SC01:2025 | Access Control Vulnerabilities | [AccessControl.sol](./contracts/vulnerable/AccessControl.sol)           |   ✅   |
-| SC02:2025 | Price Oracle Manipulation      | PriceOracle.sol                                                         |   ❌   |
+| SC02:2025 | Price Oracle Manipulation      | [PriceOracle.sol](./contracts/vulnerable/PriceOracle.sol)               |   ✅   |
 | SC03:2025 | Logic Errors                   | LogicError.sol                                                          |   ❌   |
 | SC04:2025 | Lack of Input Validation       | NoValidation.sol                                                        |   ❌   |
 | SC05:2025 | Reentrancy Attacks             | [ReEntrancy.sol](./contracts/vulnerable/ReEntrancy.sol)                 |   ✅   |

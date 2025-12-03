@@ -12,6 +12,16 @@
 
 ---
 
+## [`PriceOracleManipulation`](./vulnerable/PriceOracle.sol) (OWASP Smart Contract Top 10)
+
+| OWASP | SWC | Função | Linha(s) | Descrição |
+| :---: | ----------------------------: | :----: | :------: | :-------- |
+| [SC02:2025][SC02:2025] | [SWC-114][SWC-114] | [`borrow`](./vulnerable/PriceOracle.sol#L22-L31) | [27](./vulnerable/PriceOracle.sol#L27) | Oráculo externo não autenticado: qualquer endereço passado no construtor pode retornar preço manipulado, permitindo empréstimo acima do colateral real. Sem checagem de staleness, desvios ou múltiplas fontes. |
+
+### Correção: Usar oráculo confiável (e.g., Chainlink) com controle de acesso para setar `priceFeed`, checar tempo/round, limites de desvio e/ou TWAP antes de calcular o colateral.
+
+---
+
 ## [`EtherStore`](./vulnerable/ReEntrancy.sol) (Solidity by Example)
 
 | OWASP | SWC | Função | Linha(s) | Descrição |
@@ -49,11 +59,13 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 ---
 
 [SC01:2025]: https://scs.owasp.org/sctop10/SC01-AccessControlVulnerabilities/ "SC01:2025 Access Control Vulnerabilities"
+[SC02:2025]: https://scs.owasp.org/sctop10/SC02-PriceOracleManipulation/ "SC02:2025 Price Oracle Manipulation"
 [SC05:2025]: https://scs.owasp.org/sctop10/SC05-Reentrancy/ "SC05:2025 Reentrancy"
 [SC07:2025]: https://scs.owasp.org/sctop10/SC07-FlashLoanAttacks/ "SC07:2025 Flash Loan Attacks"
 [SC10:2025]: https://scs.owasp.org/sctop10/SC10-DenailOfService/ "SC10:2025 Denial Of Service"
 
 [SWC-107]: https://swcregistry.io/docs/SWC-107/ "SWC-107: Reentrancy"
 [SWC-113]: https://swcregistry.io/docs/SWC-113/ "SWC-113: DoS with Failed Call"
+[SWC-114]: https://swcregistry.io/docs/SWC-114/ "SWC-114: Transaction Order Dependence"
 [SWC-115]: https://swcregistry.io/docs/SWC-115/ "SWC-115: Authorization through tx.origin"
 [SWC-132]: https://swcregistry.io/docs/SWC-132/ "SWC-132: Unexpected Ether balance"
