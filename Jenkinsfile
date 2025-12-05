@@ -11,6 +11,7 @@ def reportCheck(Closure body) {
             publishChecks(conclusion: 'SUCCESS')
         } catch (err) {
             publishChecks(conclusion: 'FAILURE', summary: "${err}")
+            throw err
         }
     }
 }
@@ -81,7 +82,7 @@ pipeline {
                         }
                     }
                 }
-                stage('Foge Tests') {
+                stage('Forge Tests') {
                     agent {
                         docker {
                             image images.foundry
@@ -106,8 +107,13 @@ pipeline {
                         reportCheck {
                             sh 'mkdir -p reports'
                             // --ignore-compile: already compiled with build info
+                            // --exclude-dependencies: don't report issues from 'lib/*'
                             // --no-fail-pedantic: only fail in case of runtime issues
-                            sh 'slither --ignore-compile --no-fail-pedantic . --json reports/slither.json'
+                            sh '''
+                                slither . \
+                                    --ignore-compile --exclude-dependencies \
+                                    --no-fail-pedantic --json reports/slither.json
+                            '''
                             stash name: 'slither-report', includes: 'reports/slither.json', allowEmpty: true
                         }
                     }
@@ -167,10 +173,10 @@ pipeline {
     }
     post {
         always {
-            cleanWs()
             catchError { unstash 'slither-report' }
             catchError { unstash 'mythril-report' }
-            archiveArtifacts artifacts: 'reports/*', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: true
+            cleanWs()
         }
     }
 }
