@@ -121,28 +121,45 @@ pipeline {
                         }
                     }
                     steps {
-                        reportCheck {
-                            script {
-                                def config = readFile file: '.forge-config.json'
-                                writeFile file: '.solc-config.json', text: extractSettingsJson(config)
-                            }
-                            sh 'mkdir -p reports'
-                            script {
-                                def files = sh(script: "find contracts/ -name '*.sol' -print0", returnStdout: true)
-                                    .split('\0')
-                                    .findAll { it }
-                                    .collect { file -> "'" + file.replace("'", "'\"'\"'") + "'" }
-                                    .join(' ')
-
-                                def exitCode = sh(
-                                    script: "myth analyze --solv 0.8.26 --solc-json .solc-config.json ${files} --outform jsonv2 | tee reports/mythril.json",
-                                    returnStatus: true
-                                )
-
-                                println "Mythril found issues: ${exitCode}"
-                            }
-                            stash name: 'mythril-report', includes: 'reports/mythril.json', allowEmpty: true
+                        script {
+                            def config = readFile file: '.forge-config.json'
+                            writeFile file: '.solc-config.json', text: extractSettingsJson(config)
                         }
+                        sh 'mkdir -p reports/mythril'
+                        script {
+                            def files = sh(script: "find contracts/ -name '*.sol' -print0", returnStdout: true)
+                                .split('\0')
+                                .findAll { it }
+
+                            def branches = [:]
+                            files.each { filePath ->
+                                def safePath = "'" + filePath.replace("'", "'\"'\"'") + "'"
+                                def shortName = filePath.replaceFirst(/^contracts[\\/]/, '')
+                                def safeName  = shortName.replaceAll(/[^A-Za-z0-9_.-]/, '_')
+
+                                branches[shortName] = {
+                                    reportCheck {
+                                        script {
+                                            def exitCode = sh(
+                                                // --solv, --solc-json: try to match foundry.toml
+                                                script: """
+                                                    myth analyze ${safePath} \
+                                                        --solv 0.8.26 --solc-json .solc-config.json \
+                                                        --outform jsonv2 | tee reports/mythril/${safeName}.json
+                                                """,
+                                                returnStatus: true
+                                            )
+                                            println "Mythril reports for ${filePath}: ${exitCode}"
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (!branches.isEmpty()) {
+                                parallel branches
+                            }
+                        }
+                        stash name: 'mythril-report', includes: 'reports/mythril/*.json', allowEmpty: true
                     }
                 }
             }
