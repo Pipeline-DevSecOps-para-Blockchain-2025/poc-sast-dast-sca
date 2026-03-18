@@ -108,6 +108,60 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 
 ---
 
+## [`AccessControl`](./clean/AccessControl.sol) (OpenZeppelin)
+
+Módulo de controle de acesso baseado em roles (`bytes32`). Utiliza `msg.sender` para autorização (não `tx.origin`), emite eventos em toda mudança de role e expõe `hasRole` para checagem on-chain. Sem vulnerabilidades conhecidas.
+
+---
+
+## [`Clones`](./clean/Clones.sol) (OpenZeppelin)
+
+Biblioteca para deploy de proxies mínimos ERC-1167 via `create` e `create2`. Não mantém estado próprio; toda lógica sensível fica no contrato de implementação apontado. Sem vulnerabilidades conhecidas.
+
+---
+
+## [`ERC20` (Solmate)](./clean/ERC20-optimized.sol) (Solmate)
+
+Implementação otimizada de ERC20 com suporte a EIP-2612 (permit). Inclui proteção contra overflow (Solidity 0.8+) e aritmética segura de allowance. Sem vulnerabilidades conhecidas.
+
+---
+
+## [`ERC721`](./clean/ERC721.sol) (OpenZeppelin)
+
+Implementação do padrão ERC-721 com extensão de metadados. Inclui checagem de `onERC721Received` em transferências seguras e validação de dono/aprovação em todas as operações. Sem vulnerabilidades conhecidas.
+
+---
+
+## [`Multicall3`](./clean/Multicall3.sol) (mds1)
+
+Agrega múltiplas chamadas em uma única transação, com suporte a falhas individuais (`allowFailure`) e retorno de dados. Não custodia fundos nem modifica estado externo; risco de uso indevido recai no chamador. Sem vulnerabilidades conhecidas.
+
+---
+
+## [`Ownable`](./clean/Ownable.sol) (Solady)
+
+Mixin de autorização single-owner com handover em dois passos para evitar transferência acidental. O dono não é inicializado automaticamente — requer `_initializeOwner` explícito no construtor. Sem vulnerabilidades conhecidas.
+
+---
+
+## [`ReentrancyGuard`](./clean/ReentrancyGuard.sol) (OpenZeppelin)
+
+Módulo que provê o modificador `nonReentrant` via slot de armazenamento transitório (EIP-1153 quando disponível). Previne chamadas reentrantes aninhadas. Sem vulnerabilidades conhecidas.
+
+---
+
+## [`Safe`](./clean/Safe.sol) (Safe Smart Account)
+
+Carteira multisig com threshold configurável, suporte a módulos, guards e EIP-712. Exige quórum de assinaturas para toda transação; separa execução de validação de assinatura. Sem vulnerabilidades conhecidas.
+
+---
+
+## [`SafeTransferLib`](./clean/SafeTransferLib.sol) (Solmate)
+
+Biblioteca de transferência de ETH e ERC20 que trata graciosamente tokens sem valor de retorno. Usa assembly para transferências ETH e verifica `callStatus`. Sem vulnerabilidades conhecidas.
+
+---
+
 [SC01:2025]: https://scs.owasp.org/sctop10/SC01-AccessControlVulnerabilities/ "SC01:2025 Access Control Vulnerabilities"
 [SC02:2025]: https://scs.owasp.org/sctop10/SC02-PriceOracleManipulation/ "SC02:2025 Price Oracle Manipulation"
 [SC03:2025]: https://scs.owasp.org/sctop10/SC03-LogicErrors/ "SC03:2025 Logic Errors"
