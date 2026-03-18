@@ -102,7 +102,7 @@
 
 ---
 
-## [`ERC20`](./clean/ERC20.sol)
+## [`ERC20`](./clean/ERC20.sol) (OpenZeppelin)
 
 Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 
@@ -115,7 +115,7 @@ Implementação segura de token ERC20 sem vulnerabilidades conhecidas.
 [SC05:2025]: https://scs.owasp.org/sctop10/SC05-Reentrancy/ "SC05:2025 Reentrancy"
 [SC06:2025]: https://scs.owasp.org/sctop10/SC06-UncheckedExternalCalls/ "SC06:2025 Unchecked External Calls"
 [SC07:2025]: https://scs.owasp.org/sctop10/SC07-FlashLoanAttacks/ "SC07:2025 Flash Loan Attacks"
-[SC08:2025]: https://scs.owasp.org/sctop10/SC08-IntegerOverflowUnderflow/ "SC08:2025 Integer Overflow/Underflow"
+[SC08:2025]: https://scs.owasp.org/sctop10/SC08-IntegerOverUnderFlow/ "SC08:2025 Integer Overflow and Underflow"
 [SC09:2025]: https://scs.owasp.org/sctop10/SC09-InsecureRandomness/ "SC09:2025 Insecure Randomness"
 [SC10:2025]: https://scs.owasp.org/sctop10/SC10-DenailOfService/ "SC10:2025 Denial Of Service"
 

@@ -53,17 +53,17 @@ RUN --mount=type=bind,from=builder,source=/out/wheels,target=/tmp/wheels \
         slither-analyzer
 
 # Setup non-root user
-RUN addgroup -S slither \
-    && adduser -S -h /home -G slither -s /sbin/nologin slither \
-    && mkdir -p /home \
-    && chown slither:slither /home
+RUN addgroup -g 1000 -S slither \
+    && adduser -u 1000 -S -h /home/slither -G slither -s /sbin/nologin slither \
+    && mkdir -p /home/slither \
+    && chown slither:slither /home/slither
 
 USER slither
 WORKDIR /slither
 
 # Custom default configuration
-COPY --chown=slither:slither --chown=0600 slither.config.json /home/slither.config.json
+COPY --chown=slither:slither --chmod=0600 slither.config.json /home/slither/slither.config.json
 
 # Run Slither by default
-ENTRYPOINT ["slither", "--config-file", "/home/slither.config.json"]
+ENTRYPOINT ["slither", "--config-file", "/home/slither/slither.config.json"]
 CMD ["--help"]

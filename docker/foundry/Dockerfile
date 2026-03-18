@@ -32,10 +32,10 @@ RUN --mount=type=cache,id=apk,target=/var/cache/apk \
 COPY --from=builder /usr/local/cargo/bin /usr/local/bin
 
 # Setup non-root user
-RUN addgroup -S foundry \
-    && adduser -S -h /home -G foundry -s /sbin/nologin foundry \
-    && mkdir -p /home \
-    && chown foundry:foundry /home
+RUN addgroup -g 1000 -S foundry \
+    && adduser -u 1000 -S -h /home/foundry -G foundry -s /sbin/nologin foundry \
+    && mkdir -p /home/foundry \
+    && chown foundry:foundry /home/foundry
 
 USER foundry
 WORKDIR /foundry
