@@ -2,7 +2,7 @@
 
 ## Runtime
 FROM docker.io/mythril/myth AS runtime
-LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>"
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>; MatheusMadureiraa <matheusgmadureira@gmail.com>"
 LABEL org.opencontainers.image.description="Static analysis tooling for EVM bytecode (Mythril)"
 LABEL org.opencontainers.image.version="1.0.0"
 
@@ -17,7 +17,7 @@ RUN groupmod -g 1000 mythril \
     && chown -R mythril:mythril /home/mythril
 
 # Download newer solc binary
-ARG SOLC_VERSION=0.8.30
+ARG SOLC_VERSION=0.8.34
 RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
     pip install --upgrade solc-select \
     && solc-select install "${SOLC_VERSION}" \

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ## Builder
-FROM docker.io/python:3.14-alpine3.22 AS builder
+FROM docker.io/python:3.14-alpine3.23 AS builder
 
 # General Python build depencies
 RUN --mount=type=cache,id=apk,target=/var/cache/apk \
@@ -14,14 +14,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     PIP_ROOT_USER_ACTION=ignore PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Build Slither wheel from source
-ARG SLITHER_VERSION=0.11.3
+ARG SLITHER_VERSION=0.11.5
 RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
     mkdir -p /out/wheels \
     && pip wheel --wheel-dir /out/wheels \
         slither-analyzer=="${SLITHER_VERSION}"
 
 # Download solc binary
-ARG SOLC_VERSION=0.8.30
+ARG SOLC_VERSION=0.8.34
 RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
     pip install --upgrade solc-select \
     && solc-select install "${SOLC_VERSION}" \
@@ -30,8 +30,8 @@ RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
     && install -m 755 "$(command -v solc)" /out/bin/solc
 
 ## Runtime
-FROM docker.io/python:3.14-alpine3.22 AS runtime
-LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>"
+FROM docker.io/python:3.14-alpine3.23 AS runtime
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>; ; MatheusMadureiraa <matheusgmadureira@gmail.com>"
 LABEL org.opencontainers.image.description="Static analysis tooling for Solidity (Slither)"
 LABEL org.opencontainers.image.version="1.0.0"
 

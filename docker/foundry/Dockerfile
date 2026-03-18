@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ## Builder
-FROM docker.io/rust:alpine3.22 AS builder
+FROM docker.io/rust:alpine3.23 AS builder
 
 # Foundry build dependencies
 RUN --mount=type=cache,id=apk,target=/var/cache/apk \
@@ -10,7 +10,7 @@ RUN --mount=type=cache,id=apk,target=/var/cache/apk \
         linux-headers libusb-dev
 
 # Build Foundry from source
-ARG FOUNDRY_VERSION=1.4.4
+ARG FOUNDRY_VERSION=1.5.1
 RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry \
     --mount=type=cache,id=cargo-git,target=/usr/local/cargo/git \
     cargo install --force --profile release --locked \
@@ -18,8 +18,8 @@ RUN --mount=type=cache,id=cargo-registry,target=/usr/local/cargo/registry \
         forge cast chisel anvil
 
 ## Runtime
-FROM docker.io/alpine:3.22 AS runtime
-LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>"
+FROM docker.io/alpine:3.23 AS runtime
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>; MatheusMadureiraa <matheusgmadureira@gmail.com>"
 LABEL org.opencontainers.image.description="Blazing fast smart contract development toolkit (used for DAST/SCA)"
 LABEL org.opencontainers.image.version="1.0.0"
 
