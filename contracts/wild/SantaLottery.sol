@@ -1,17 +1,17 @@
 /**
  *Submitted for verification at Etherscan.io on 2022-11-11
-*/
+ */
 
 /**
  *Submitted for verification at Etherscan.io on 2022-11-11
-*/
+ */
 
 /**
-
-Telegram - T.ME/SantaLotteryPortal
-
-
-*/
+ *
+ * Telegram - T.ME/SantaLotteryPortal
+ *
+ *
+ */
 
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.9;
@@ -33,27 +33,16 @@ interface IERC20 {
 
     function approve(address spender, uint256 amount) external returns (bool);
 
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
 contract Ownable is Context {
     address private _owner;
     address private _previousOwner;
-    event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
-    );
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     constructor() {
         address msgSender = _msgSender();
@@ -80,7 +69,6 @@ contract Ownable is Context {
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }
-
 }
 
 library SafeMath {
@@ -94,11 +82,7 @@ library SafeMath {
         return sub(a, b, "SafeMath: subtraction overflow");
     }
 
-    function sub(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
+    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b <= a, errorMessage);
         uint256 c = a - b;
         return c;
@@ -117,11 +101,7 @@ library SafeMath {
         return div(a, b, "SafeMath: division by zero");
     }
 
-    function div(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
+    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b > 0, errorMessage);
         uint256 c = a / b;
         return c;
@@ -129,9 +109,7 @@ library SafeMath {
 }
 
 interface IUniswapV2Factory {
-    function createPair(address tokenA, address tokenB)
-        external
-        returns (address pair);
+    function createPair(address tokenA, address tokenB) external returns (address pair);
 }
 
 interface IUniswapV2Router02 {
@@ -154,18 +132,10 @@ interface IUniswapV2Router02 {
         uint256 amountETHMin,
         address to,
         uint256 deadline
-    )
-        external
-        payable
-        returns (
-            uint256 amountToken,
-            uint256 amountETH,
-            uint256 liquidity
-        );
+    ) external payable returns (uint256 amountToken, uint256 amountETH, uint256 liquidity);
 }
 
 contract SantaLottery is Context, IERC20, Ownable {
-
     using SafeMath for uint256;
 
     string private constant _name = "SantaLottery";
@@ -177,7 +147,7 @@ contract SantaLottery is Context, IERC20, Ownable {
     mapping(address => mapping(address => uint256)) private _allowances;
     mapping(address => bool) private _isExcludedFromFee;
     uint256 private constant MAX = ~uint256(0);
-    uint256 private constant _tTotal = 100000000 * 10**9;
+    uint256 private constant _tTotal = 100_000_000 * 10 ** 9;
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tFeeTotal;
     uint256 private _redisFeeOnBuy = 0;
@@ -192,7 +162,8 @@ contract SantaLottery is Context, IERC20, Ownable {
     uint256 private _previousredisFee = _redisFee;
     uint256 private _previoustaxFee = _taxFee;
 
-    mapping(address => bool) public bots; mapping (address => uint256) public _buyMap;
+    mapping(address => bool) public bots;
+    mapping(address => uint256) public _buyMap;
     address payable private _developmentAddress = payable(0x0713c8FFd6982760ACc0d6d19B5719bDD8EBD015);
     address payable private _marketingAddress = payable(0x0713c8FFd6982760ACc0d6d19B5719bDD8EBD015);
 
@@ -203,25 +174,23 @@ contract SantaLottery is Context, IERC20, Ownable {
     bool private inSwap = false;
     bool private swapEnabled = true;
 
-    uint256 public _maxTxAmount = 2000000 * 10**9;
-    uint256 public _maxWalletSize = 2000000 * 10**9;
-    uint256 public _swapTokensAtAmount = 35000 * 10**9;
+    uint256 public _maxTxAmount = 2_000_000 * 10 ** 9;
+    uint256 public _maxWalletSize = 2_000_000 * 10 ** 9;
+    uint256 public _swapTokensAtAmount = 35_000 * 10 ** 9;
 
     event MaxTxAmountUpdated(uint256 _maxTxAmount);
-    modifier lockTheSwap {
+    modifier lockTheSwap() {
         inSwap = true;
         _;
         inSwap = false;
     }
 
     constructor() {
-
         _rOwned[_msgSender()] = _rTotal;
 
-        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);//
+        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D); //
         uniswapV2Router = _uniswapV2Router;
-        uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
-            .createPair(address(this), _uniswapV2Router.WETH());
+        uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory()).createPair(address(this), _uniswapV2Router.WETH());
 
         _isExcludedFromFee[owner()] = true;
         _isExcludedFromFee[address(this)] = true;
@@ -251,65 +220,40 @@ contract SantaLottery is Context, IERC20, Ownable {
         return tokenFromReflection(_rOwned[account]);
     }
 
-    function transfer(address recipient, uint256 amount)
-        public
-        override
-        returns (bool)
-    {
+    function transfer(address recipient, uint256 amount) public override returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
 
-    function allowance(address owner, address spender)
-        public
-        view
-        override
-        returns (uint256)
-    {
+    function allowance(address owner, address spender) public view override returns (uint256) {
         return _allowances[owner][spender];
     }
 
-    function approve(address spender, uint256 amount)
-        public
-        override
-        returns (bool)
-    {
+    function approve(address spender, uint256 amount) public override returns (bool) {
         _approve(_msgSender(), spender, amount);
         return true;
     }
 
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) public override returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(
             sender,
             _msgSender(),
-            _allowances[sender][_msgSender()].sub(
-                amount,
-                "ERC20: transfer amount exceeds allowance"
-            )
+            _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance")
         );
         return true;
     }
 
-    function tokenFromReflection(uint256 rAmount)
-        private
-        view
-        returns (uint256)
-    {
-        require(
-            rAmount <= _rTotal,
-            "Amount must be less than total reflections"
-        );
+    function tokenFromReflection(uint256 rAmount) private view returns (uint256) {
+        require(rAmount <= _rTotal, "Amount must be less than total reflections");
         uint256 currentRate = _getRate();
         return rAmount.div(currentRate);
     }
 
     function removeAllFee() private {
-        if (_redisFee == 0 && _taxFee == 0) return;
+        if (_redisFee == 0 && _taxFee == 0) {
+            return;
+        }
 
         _previousredisFee = _redisFee;
         _previoustaxFee = _taxFee;
@@ -323,28 +267,19 @@ contract SantaLottery is Context, IERC20, Ownable {
         _taxFee = _previoustaxFee;
     }
 
-    function _approve(
-        address owner,
-        address spender,
-        uint256 amount
-    ) private {
+    function _approve(address owner, address spender, uint256 amount) private {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
         _allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 
-    function _transfer(
-        address from,
-        address to,
-        uint256 amount
-    ) private {
+    function _transfer(address from, address to, uint256 amount) private {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
 
         if (from != owner() && to != owner()) {
-
             //Trade start check
             if (!tradingOpen) {
                 require(from == owner(), "TOKEN: This account cannot send tokens until trading is enabled");
@@ -353,19 +288,21 @@ contract SantaLottery is Context, IERC20, Ownable {
             require(amount <= _maxTxAmount, "TOKEN: Max Transaction Limit");
             require(!bots[from] && !bots[to], "TOKEN: Your account is blacklisted!");
 
-            if(to != uniswapV2Pair) {
+            if (to != uniswapV2Pair) {
                 require(balanceOf(to) + amount < _maxWalletSize, "TOKEN: Balance exceeds wallet size!");
             }
 
             uint256 contractTokenBalance = balanceOf(address(this));
             bool canSwap = contractTokenBalance >= _swapTokensAtAmount;
 
-            if(contractTokenBalance >= _maxTxAmount)
-            {
+            if (contractTokenBalance >= _maxTxAmount) {
                 contractTokenBalance = _maxTxAmount;
             }
 
-            if (canSwap && !inSwap && from != uniswapV2Pair && swapEnabled && !_isExcludedFromFee[from] && !_isExcludedFromFee[to]) {
+            if (
+                canSwap && !inSwap && from != uniswapV2Pair && swapEnabled && !_isExcludedFromFee[from]
+                    && !_isExcludedFromFee[to]
+            ) {
                 swapTokensForEth(contractTokenBalance);
                 uint256 contractETHBalance = address(this).balance;
                 if (contractETHBalance > 0) {
@@ -380,9 +317,8 @@ contract SantaLottery is Context, IERC20, Ownable {
         if ((_isExcludedFromFee[from] || _isExcludedFromFee[to]) || (from != uniswapV2Pair && to != uniswapV2Pair)) {
             takeFee = false;
         } else {
-
             //Set Fee for Buys
-            if(from == uniswapV2Pair && to != address(uniswapV2Router)) {
+            if (from == uniswapV2Pair && to != address(uniswapV2Router)) {
                 _redisFee = _redisFeeOnBuy;
                 _taxFee = _taxFeeOnBuy;
             }
@@ -392,7 +328,6 @@ contract SantaLottery is Context, IERC20, Ownable {
                 _redisFee = _redisFeeOnSell;
                 _taxFee = _taxFeeOnSell;
             }
-
         }
 
         _tokenTransfer(from, to, amount, takeFee);
@@ -404,11 +339,7 @@ contract SantaLottery is Context, IERC20, Ownable {
         path[1] = uniswapV2Router.WETH();
         _approve(address(this), address(uniswapV2Router), tokenAmount);
         uniswapV2Router.swapExactTokensForETHSupportingFeeOnTransferTokens(
-            tokenAmount,
-            0,
-            path,
-            address(this),
-            block.timestamp
+            tokenAmount, 0, path, address(this), block.timestamp
         );
     }
 
@@ -442,30 +373,19 @@ contract SantaLottery is Context, IERC20, Ownable {
         bots[notbot] = false;
     }
 
-    function _tokenTransfer(
-        address sender,
-        address recipient,
-        uint256 amount,
-        bool takeFee
-    ) private {
-        if (!takeFee) removeAllFee();
+    function _tokenTransfer(address sender, address recipient, uint256 amount, bool takeFee) private {
+        if (!takeFee) {
+            removeAllFee();
+        }
         _transferStandard(sender, recipient, amount);
-        if (!takeFee) restoreAllFee();
+        if (!takeFee) {
+            restoreAllFee();
+        }
     }
 
-    function _transferStandard(
-        address sender,
-        address recipient,
-        uint256 tAmount
-    ) private {
-        (
-            uint256 rAmount,
-            uint256 rTransferAmount,
-            uint256 rFee,
-            uint256 tTransferAmount,
-            uint256 tFee,
-            uint256 tTeam
-        ) = _getValues(tAmount);
+    function _transferStandard(address sender, address recipient, uint256 tAmount) private {
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tTeam) =
+            _getValues(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
         _takeTeam(tTeam);
@@ -484,40 +404,19 @@ contract SantaLottery is Context, IERC20, Ownable {
         _tFeeTotal = _tFeeTotal.add(tFee);
     }
 
-    receive() external payable {}
+    receive() external payable { }
 
-    function _getValues(uint256 tAmount)
-        private
-        view
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        (uint256 tTransferAmount, uint256 tFee, uint256 tTeam) =
-            _getTValues(tAmount, _redisFee, _taxFee);
+    function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
+        (uint256 tTransferAmount, uint256 tFee, uint256 tTeam) = _getTValues(tAmount, _redisFee, _taxFee);
         uint256 currentRate = _getRate();
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) =
-            _getRValues(tAmount, tFee, tTeam, currentRate);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tTeam, currentRate);
         return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tTeam);
     }
 
-    function _getTValues(
-        uint256 tAmount,
-        uint256 redisFee,
-        uint256 taxFee
-    )
+    function _getTValues(uint256 tAmount, uint256 redisFee, uint256 taxFee)
         private
         pure
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
+        returns (uint256, uint256, uint256)
     {
         uint256 tFee = tAmount.mul(redisFee).div(100);
         uint256 tTeam = tAmount.mul(taxFee).div(100);
@@ -525,19 +424,10 @@ contract SantaLottery is Context, IERC20, Ownable {
         return (tTransferAmount, tFee, tTeam);
     }
 
-    function _getRValues(
-        uint256 tAmount,
-        uint256 tFee,
-        uint256 tTeam,
-        uint256 currentRate
-    )
+    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tTeam, uint256 currentRate)
         private
         pure
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
+        returns (uint256, uint256, uint256)
     {
         uint256 rAmount = tAmount.mul(currentRate);
         uint256 rFee = tFee.mul(currentRate);
@@ -554,11 +444,16 @@ contract SantaLottery is Context, IERC20, Ownable {
     function _getCurrentSupply() private view returns (uint256, uint256) {
         uint256 rSupply = _rTotal;
         uint256 tSupply = _tTotal;
-        if (rSupply < _rTotal.div(_tTotal)) return (_rTotal, _tTotal);
+        if (rSupply < _rTotal.div(_tTotal)) {
+            return (_rTotal, _tTotal);
+        }
         return (rSupply, tSupply);
     }
 
-    function setFee(uint256 redisFeeOnBuy, uint256 redisFeeOnSell, uint256 taxFeeOnBuy, uint256 taxFeeOnSell) public onlyOwner {
+    function setFee(uint256 redisFeeOnBuy, uint256 redisFeeOnSell, uint256 taxFeeOnBuy, uint256 taxFeeOnSell)
+        public
+        onlyOwner
+    {
         _redisFeeOnBuy = redisFeeOnBuy;
         _redisFeeOnSell = redisFeeOnSell;
         _taxFeeOnBuy = taxFeeOnBuy;
@@ -585,9 +480,8 @@ contract SantaLottery is Context, IERC20, Ownable {
     }
 
     function excludeMultipleAccountsFromFees(address[] calldata accounts, bool excluded) public onlyOwner {
-        for(uint256 i = 0; i < accounts.length; i++) {
+        for (uint256 i = 0; i < accounts.length; i++) {
             _isExcludedFromFee[accounts[i]] = excluded;
         }
     }
-
 }

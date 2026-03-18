@@ -1,14 +1,12 @@
 /**
  *Submitted for verification at Etherscan.io on 2021-11-03
-*/
+ */
 
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.4;
 
 library Strings {
-
     function toString(uint256 value) internal pure returns (string memory) {
-
         if (value == 0) {
             return "0";
         }
@@ -30,7 +28,6 @@ library Strings {
 }
 
 library EnumerableMap {
-
     struct MapEntry {
         bytes32 _key;
         bytes32 _value;
@@ -39,13 +36,14 @@ library EnumerableMap {
     struct Map {
         MapEntry[] _entries;
 
-        mapping (bytes32 => uint256) _indexes;
+        mapping(bytes32 => uint256) _indexes;
     }
 
     function _set(Map storage map, bytes32 key, bytes32 value) private returns (bool) {
         uint256 keyIndex = map._indexes[key];
 
-        if (keyIndex == 0) { // Equivalent to !contains(map, key)
+        if (keyIndex == 0) {
+            // Equivalent to !contains(map, key)
             map._entries.push(MapEntry({ _key: key, _value: value }));
             map._indexes[key] = map._entries.length;
             return true;
@@ -58,7 +56,8 @@ library EnumerableMap {
     function _remove(Map storage map, bytes32 key) private returns (bool) {
         uint256 keyIndex = map._indexes[key];
 
-        if (keyIndex != 0) { // Equivalent to contains(map, key)
+        if (keyIndex != 0) {
+            // Equivalent to contains(map, key)
             uint256 toDeleteIndex = keyIndex - 1;
             uint256 lastIndex = map._entries.length - 1;
             MapEntry storage lastEntry = map._entries[lastIndex];
@@ -93,7 +92,9 @@ library EnumerableMap {
 
     function _tryGet(Map storage map, bytes32 key) private view returns (bool, bytes32) {
         uint256 keyIndex = map._indexes[key];
-        if (keyIndex == 0) return (false, 0); // Equivalent to contains(map, key)
+        if (keyIndex == 0) {
+            return (false, 0); // Equivalent to contains(map, key)
+        }
         return (true, map._entries[keyIndex - 1]._value); // All indexes are 1-based
     }
 
@@ -143,7 +144,11 @@ library EnumerableMap {
         return address(uint160(uint256(_get(map._inner, bytes32(key)))));
     }
 
-    function get(UintToAddressMap storage map, uint256 key, string memory errorMessage) internal view returns (address) {
+    function get(UintToAddressMap storage map, uint256 key, string memory errorMessage)
+        internal
+        view
+        returns (address)
+    {
         return address(uint160(uint256(_get(map._inner, bytes32(key), errorMessage))));
     }
 }
@@ -151,7 +156,7 @@ library EnumerableMap {
 library EnumerableSet {
     struct Set {
         bytes32[] _values;
-        mapping (bytes32 => uint256) _indexes;
+        mapping(bytes32 => uint256) _indexes;
     }
 
     function _add(Set storage set, bytes32 value) private returns (bool) {
@@ -167,7 +172,8 @@ library EnumerableSet {
     function _remove(Set storage set, bytes32 value) private returns (bool) {
         uint256 valueIndex = set._indexes[value];
 
-        if (valueIndex != 0) { // Equivalent to contains(set, value)
+        if (valueIndex != 0) {
+            // Equivalent to contains(set, value)
             uint256 toDeleteIndex = valueIndex - 1;
             uint256 lastIndex = set._values.length - 1;
             bytes32 lastvalue = set._values[lastIndex];
@@ -272,7 +278,6 @@ library EnumerableSet {
 }
 
 interface IERC165 {
-
     /**
      * @dev Returns true if this contract implements the interface defined by
      * `interfaceId`. See the corresponding
@@ -280,47 +285,57 @@ interface IERC165 {
      * to learn more about how these ids are created.
      *
      * This function call must use less than 30 000 gas.
-     */ 
-
+     */
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
 
 interface IERC1155 is IERC165 {
-
     event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
-    event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values);
+    event TransferBatch(
+        address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values
+    );
     event ApprovalForAll(address indexed account, address indexed operator, bool approved);
     event URI(string value, uint256 indexed id);
     event tokenBaseURI(string value);
     function name() external view returns (string memory);
     function symbol() external view returns (string memory);
     function balanceOf(address account, uint256 id) external view returns (uint256);
-    function contractOwner() external view returns(address owner); 
-    function royaltyFee(uint256 tokenId) external view returns(uint256);
-    function getCreator(uint256 tokenId) external view returns(address);
+    function contractOwner() external view returns (address owner);
+    function royaltyFee(uint256 tokenId) external view returns (uint256);
+    function getCreator(uint256 tokenId) external view returns (address);
     function tokenURI(uint256 tokenId) external view returns (string memory);
-    function balanceOfBatch(address[] calldata accounts, uint256[] calldata ids) external view returns (uint256[] memory);
+    function balanceOfBatch(address[] calldata accounts, uint256[] calldata ids)
+        external
+        view
+        returns (uint256[] memory);
     function setApprovalForAll(address operator, bool approved) external;
     function isApprovedForAll(address account, address operator) external view returns (bool);
     function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external;
-    function safeBatchTransferFrom(address from, address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external;
-    function mintAndTransfer(address from, address to, uint256 itemId, uint256 fee, uint256 _supply, string memory _tokenURI, uint256 qty, bytes memory data)external returns(uint256);
-
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
+    ) external;
+    function mintAndTransfer(
+        address from,
+        address to,
+        uint256 itemId,
+        uint256 fee,
+        uint256 _supply,
+        string memory _tokenURI,
+        uint256 qty,
+        bytes memory data
+    ) external returns (uint256);
 }
 
-interface IERC1155MetadataURI is IERC1155 {
-}
+interface IERC1155MetadataURI is IERC1155 { }
 
 interface IERC1155Receiver is IERC165 {
-    function onERC1155Received(
-        address operator,
-        address from,
-        uint256 id,
-        uint256 value,
-        bytes calldata data
-    )
+    function onERC1155Received(address operator, address from, uint256 id, uint256 value, bytes calldata data)
         external
-        returns(bytes4);
+        returns (bytes4);
 
     function onERC1155BatchReceived(
         address operator,
@@ -328,9 +343,7 @@ interface IERC1155Receiver is IERC165 {
         uint256[] calldata ids,
         uint256[] calldata values,
         bytes calldata data
-    )
-        external
-        returns(bytes4);
+    ) external returns (bytes4);
 }
 
 abstract contract Context {
@@ -339,7 +352,8 @@ abstract contract Context {
     }
 
     function _msgData() internal view virtual returns (bytes memory) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
+        this; // silence state mutability warning without generating bytecode - see
+        // https://github.com/ethereum/solidity/issues/2691
         return msg.data;
     }
 }
@@ -348,7 +362,7 @@ contract ERC165 is IERC165 {
     bytes4 private constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
     mapping(bytes4 => bool) private _supportedInterfaces;
 
-    constructor () {
+    constructor() {
         _registerInterface(_INTERFACE_ID_ERC165);
     }
 
@@ -365,14 +379,12 @@ contract ERC165 is IERC165 {
 /**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
-*/
+ */
 
 library SafeMath {
-
     /**
-    * @dev Adds two numbers, throws on overflow.
-    */
-
+     * @dev Adds two numbers, throws on overflow.
+     */
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
         require(c >= a, "SafeMath: addition overflow");
@@ -381,8 +393,8 @@ library SafeMath {
     }
 
     /**
-    * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
-    */
+     * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+     */
 
     function sub(uint256 a, uint256 b) internal pure returns (uint256) {
         return sub(a, b, "SafeMath: subtraction overflow");
@@ -397,7 +409,6 @@ library SafeMath {
 }
 
 library Address {
-
     function isContract(address account) internal view returns (bool) {
         uint256 size;
         assembly { size := extcodesize(account) }
@@ -407,15 +418,18 @@ library Address {
     function sendValue(address payable recipient, uint256 amount) internal {
         require(address(this).balance >= amount, "Address: insufficient balance");
 
-        (bool success, ) = recipient.call{ value: amount }("");
+        (bool success,) = recipient.call{ value: amount }("");
         require(success, "Address: unable to send value, recipient may have reverted");
     }
 
     function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-      return functionCall(target, data, "Address: low-level call failed");
+        return functionCall(target, data, "Address: low-level call failed");
     }
 
-    function functionCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
+    function functionCall(address target, bytes memory data, string memory errorMessage)
+        internal
+        returns (bytes memory)
+    {
         return _functionCallWithValue(target, data, 0, errorMessage);
     }
 
@@ -423,12 +437,18 @@ library Address {
         return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
     }
 
-    function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage) internal returns (bytes memory) {
+    function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage)
+        internal
+        returns (bytes memory)
+    {
         require(address(this).balance >= value, "Address: insufficient balance for call");
         return _functionCallWithValue(target, data, value, errorMessage);
     }
 
-    function _functionCallWithValue(address target, bytes memory data, uint256 weiValue, string memory errorMessage) private returns (bytes memory) {
+    function _functionCallWithValue(address target, bytes memory data, uint256 weiValue, string memory errorMessage)
+        private
+        returns (bytes memory)
+    {
         require(isContract(target), "Address: call to non-contract");
 
         (bool success, bytes memory returndata) = target.call{ value: weiValue }(data);
@@ -436,7 +456,6 @@ library Address {
             return returndata;
         } else {
             if (returndata.length > 0) {
-
                 assembly {
                     let returndata_size := mload(returndata)
                     revert(add(32, returndata), returndata_size)
@@ -455,12 +474,12 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     using EnumerableMap for EnumerableMap.UintToAddressMap;
 
     // Mapping from token ID to account balances
-    mapping (uint256 => address) private creators;
-    mapping (uint256 => uint256) private _royaltyFee;
-    mapping (uint256 => mapping(address => uint256)) private _balances;
+    mapping(uint256 => address) private creators;
+    mapping(uint256 => uint256) private _royaltyFee;
+    mapping(uint256 => mapping(address => uint256)) private _balances;
 
     // Mapping from account to operator approvals
-    mapping (address => mapping(address => bool)) private _operatorApprovals;
+    mapping(address => mapping(address => bool)) private _operatorApprovals;
     string public tokenURIPrefix;
 
     // Optional mapping for token URIs
@@ -482,7 +501,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
     bytes4 private constant _INTERFACE_ID_ERC1155_METADATA_URI = 0x0e89341c;
 
-    constructor (string memory name_, string memory symbol_, address _transferProxy) {
+    constructor(string memory name_, string memory symbol_, address _transferProxy) {
         _name = name_;
         _symbol = symbol_;
         owner = msg.sender;
@@ -501,45 +520,44 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     }
 
     /**
-        * @dev Internal function to set the token URI for a given token.
-        * Reverts if the token ID does not exist.
-        * @param tokenId uint256 ID of the token to set its URI
-        * @param uri string URI to assign
-    */    
+     * @dev Internal function to set the token URI for a given token.
+     * Reverts if the token ID does not exist.
+     * @param tokenId uint256 ID of the token to set its URI
+     * @param uri string URI to assign
+     */
 
     function _setTokenURI(uint256 tokenId, string memory uri) internal {
         _tokenURIs[tokenId] = uri;
     }
 
-
-    function contractOwner() public view virtual override returns(address){
+    function contractOwner() public view virtual override returns (address) {
         return owner;
     }
 
     /**
-        @notice Get the royalty associated with tokenID.
-        @param tokenId     ID of the Token.
-        @return        royaltyFee of given ID.
+     *     @notice Get the royalty associated with tokenID.
+     *     @param tokenId     ID of the Token.
+     *     @return        royaltyFee of given ID.
      */
 
-    function royaltyFee(uint256 tokenId) public view override returns(uint256) {
+    function royaltyFee(uint256 tokenId) public view override returns (uint256) {
         return _royaltyFee[tokenId];
     }
 
     /**
-        @notice Get the creator of given tokenID.
-        @param tokenId     ID of the Token.
-        @return        creator of given ID.
-     */    
+     *     @notice Get the creator of given tokenID.
+     *     @param tokenId     ID of the Token.
+     *     @return        creator of given ID.
+     */
 
-    function getCreator(uint256 tokenId) public view virtual override returns(address) {
+    function getCreator(uint256 tokenId) public view virtual override returns (address) {
         return creators[tokenId];
     }
 
     /**
-        * @dev Internal function to set the token URI for all the tokens.
-        * @param _tokenURIPrefix string memory _tokenURIPrefix of the tokens.
-    */   
+     * @dev Internal function to set the token URI for all the tokens.
+     * @param _tokenURIPrefix string memory _tokenURIPrefix of the tokens.
+     */
 
     function _setTokenURIPrefix(string memory _tokenURIPrefix) internal {
         tokenURIPrefix = _tokenURIPrefix;
@@ -547,10 +565,10 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     }
 
     /**
-        * @dev Returns an URI for a given token ID.
-        * Throws if the token ID does not exist. May return an empty string.
-        * @param tokenId uint256 ID of the token to query
-    */    
+     * @dev Returns an URI for a given token ID.
+     * Throws if the token ID does not exist. May return an empty string.
+     * @param tokenId uint256 ID of the token to query
+     */
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         require(_exists(tokenId), "ERC1155Metadata: URI query for nonexistent token");
@@ -571,10 +589,10 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     }
 
     /**
-        @notice Get the balance of an account's Tokens.
-        @param account  The address of the token holder
-        @param tokenId     ID of the Token
-        @return        The owner's balance of the Token type requested
+     *     @notice Get the balance of an account's Tokens.
+     *     @param account  The address of the token holder
+     *     @param tokenId     ID of the Token
+     *     @return        The owner's balance of the Token type requested
      */
 
     function balanceOf(address account, uint256 tokenId) public view override returns (uint256) {
@@ -583,18 +601,14 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         return _balances[tokenId][account];
     }
 
-
     /**
-        @notice Get the balance of multiple account/token pairs
-        @param accounts The addresses of the token holders
-        @param ids    ID of the Tokens
-        @return        The _owner's balance of the Token types requested (i.e. balance for each (owner, id) pair)
+     *     @notice Get the balance of multiple account/token pairs
+     *     @param accounts The addresses of the token holders
+     *     @param ids    ID of the Tokens
+     *     @return        The _owner's balance of the Token types requested (i.e. balance for each (owner, id) pair)
      */
 
-    function balanceOfBatch(
-        address[] memory accounts,
-        uint256[] memory ids
-    )
+    function balanceOfBatch(address[] memory accounts, uint256[] memory ids)
         public
         view
         override
@@ -613,11 +627,11 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     }
 
     /**
-        @notice Enable or disable approval for a third party ("operator") to manage all of the caller's tokens.
-        @dev MUST emit the ApprovalForAll event on success.
-        @param operator  Address to add to the set of authorized operators
-        @param approved  True if the operator is approved, false to revoke approval
-    */
+     *     @notice Enable or disable approval for a third party ("operator") to manage all of the caller's tokens.
+     *     @dev MUST emit the ApprovalForAll event on success.
+     *     @param operator  Address to add to the set of authorized operators
+     *     @param approved  True if the operator is approved, false to revoke approval
+     */
 
     function setApprovalForAll(address operator, bool approved) public virtual override {
         require(_msgSender() != operator, "ERC1155: setting approval status for self");
@@ -627,46 +641,45 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     }
 
     /**
-        @notice Queries the approval status of an operator for a given owner.
-        @param account     The owner of the Tokens
-        @param operator  Address of authorized operator
-        @return           True if the operator is approved, false if not
-    */
+     *     @notice Queries the approval status of an operator for a given owner.
+     *     @param account     The owner of the Tokens
+     *     @param operator  Address of authorized operator
+     *     @return           True if the operator is approved, false if not
+     */
 
     function isApprovedForAll(address account, address operator) public view override returns (bool) {
         return _operatorApprovals[account][operator];
     }
 
     /**
-        @notice Transfers `_value` amount of an `_id` from the `_from` address to the `_to` address specified (with safety call).
-        @dev Caller must be approved to manage the tokens being transferred out of the `_from` account (see "Approval" section of the standard).
-        MUST revert if `_to` is the zero address.
-        MUST revert if balance of holder for token `_id` is lower than the `_value` sent.
-        MUST revert on any other error.
-        MUST emit the `TransferSingle` event to reflect the balance change (see "Safe Transfer Rules" section of the standard).
-        After the above conditions are met, this function MUST check if `_to` is a smart contract (e.g. code size > 0). If so, it MUST call `onERC1155Received` on `_to` and act appropriately (see "Safe Transfer Rules" section of the standard).
-        @param from    Source address
-        @param to      Target address
-        @param tokenId      ID of the token type
-        @param amount   Transfer amount
-        @param data    Additional data with no specified format, MUST be sent unaltered in call to `onERC1155Received` on `_to`
-    */    
+     *     @notice Transfers `_value` amount of an `_id` from the `_from` address to the `_to` address specified (with
+     * safety call).
+     *     @dev Caller must be approved to manage the tokens being transferred out of the `_from` account (see
+     * "Approval" section of the standard).
+     *     MUST revert if `_to` is the zero address.
+     *     MUST revert if balance of holder for token `_id` is lower than the `_value` sent.
+     *     MUST revert on any other error.
+     *     MUST emit the `TransferSingle` event to reflect the balance change (see "Safe Transfer Rules" section of the
+     * standard).
+     *     After the above conditions are met, this function MUST check if `_to` is a smart contract (e.g. code size >
+     * 0). If so, it MUST call `onERC1155Received` on `_to` and act appropriately (see "Safe Transfer Rules" section of
+     * the standard).
+     *     @param from    Source address
+     *     @param to      Target address
+     *     @param tokenId      ID of the token type
+     *     @param amount   Transfer amount
+     *     @param data    Additional data with no specified format, MUST be sent unaltered in call to
+     * `onERC1155Received` on `_to`
+     */
 
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId,
-        uint256 amount,
-        bytes memory data
-    )
+    function safeTransferFrom(address from, address to, uint256 tokenId, uint256 amount, bytes memory data)
         public
         virtual
         override
     {
         require(to != address(0), "ERC1155: transfer to the zero address");
         require(
-            from == _msgSender() || isApprovedForAll(from, _msgSender()),
-            "ERC1155: caller is not owner nor approved"
+            from == _msgSender() || isApprovedForAll(from, _msgSender()), "ERC1155: caller is not owner nor approved"
         );
 
         address operator = _msgSender();
@@ -682,21 +695,29 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     }
 
     /**
-        @notice Transfers `_values` amount(s) of `_ids` from the `_from` address to the `_to` address specified (with safety call).
-        @dev Caller must be approved to manage the tokens being transferred out of the `_from` account (see "Approval" section of the standard).
-        MUST revert if `_to` is the zero address.
-        MUST revert if length of `_ids` is not the same as length of `_values`.
-        MUST revert if any of the balance(s) of the holder(s) for token(s) in `_ids` is lower than the respective amount(s) in `_values` sent to the recipient.
-        MUST revert on any other error.
-        MUST emit `TransferSingle` or `TransferBatch` event(s) such that all the balance changes are reflected (see "Safe Transfer Rules" section of the standard).
-        Balance changes and events MUST follow the ordering of the arrays (_ids[0]/_values[0] before _ids[1]/_values[1], etc).
-        After the above conditions for the transfer(s) in the batch are met, this function MUST check if `_to` is a smart contract (e.g. code size > 0). If so, it MUST call the relevant `ERC1155TokenReceiver` hook(s) on `_to` and act appropriately (see "Safe Transfer Rules" section of the standard).
-        @param from    Source address
-        @param to      Target address
-        @param tokenIds     IDs of each token type (order and length must match _values array)
-        @param amounts  Transfer amounts per token type (order and length must match _ids array)
-        @param data    Additional data with no specified format, MUST be sent unaltered in call to the `ERC1155TokenReceiver` hook(s) on `_to`
-    */
+     *     @notice Transfers `_values` amount(s) of `_ids` from the `_from` address to the `_to` address specified (with
+     * safety call).
+     *     @dev Caller must be approved to manage the tokens being transferred out of the `_from` account (see
+     * "Approval" section of the standard).
+     *     MUST revert if `_to` is the zero address.
+     *     MUST revert if length of `_ids` is not the same as length of `_values`.
+     *     MUST revert if any of the balance(s) of the holder(s) for token(s) in `_ids` is lower than the respective
+     * amount(s) in `_values` sent to the recipient.
+     *     MUST revert on any other error.
+     *     MUST emit `TransferSingle` or `TransferBatch` event(s) such that all the balance changes are reflected (see
+     * "Safe Transfer Rules" section of the standard).
+     *     Balance changes and events MUST follow the ordering of the arrays (_ids[0]/_values[0] before
+     * _ids[1]/_values[1], etc).
+     *     After the above conditions for the transfer(s) in the batch are met, this function MUST check if `_to` is a
+     * smart contract (e.g. code size > 0). If so, it MUST call the relevant `ERC1155TokenReceiver` hook(s) on `_to` and
+     * act appropriately (see "Safe Transfer Rules" section of the standard).
+     *     @param from    Source address
+     *     @param to      Target address
+     *     @param tokenIds     IDs of each token type (order and length must match _values array)
+     *     @param amounts  Transfer amounts per token type (order and length must match _ids array)
+     *     @param data    Additional data with no specified format, MUST be sent unaltered in call to the
+     * `ERC1155TokenReceiver` hook(s) on `_to`
+     */
 
     function safeBatchTransferFrom(
         address from,
@@ -704,11 +725,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256[] memory tokenIds,
         uint256[] memory amounts,
         bytes memory data
-    )
-        public
-        virtual
-        override
-    {
+    ) public virtual override {
         require(tokenIds.length == amounts.length, "ERC1155: ids and amounts length mismatch");
         require(to != address(0), "ERC1155: transfer to the zero address");
         require(
@@ -724,10 +741,8 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
             uint256 tokenId = tokenIds[i];
             uint256 amount = amounts[i];
 
-            _balances[tokenId][from] = _balances[tokenId][from].sub(
-                amount,
-                "ERC1155: insufficient balance for transfer"
-            );
+            _balances[tokenId][from] =
+                _balances[tokenId][from].sub(amount, "ERC1155: insufficient balance for transfer");
             _balances[tokenId][to] = _balances[tokenId][to].add(amount);
         }
 
@@ -736,16 +751,14 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         _doSafeBatchTransferAcceptanceCheck(operator, from, to, tokenIds, amounts, data);
     }
 
-
-
     /**
-        * @dev Internal function to mint a new token.
-        * Reverts if the given token ID already exists.
-        * @param tokenId uint256 ID of the token to be minted
-        * @param _supply uint256 supply of the token to be minted
-        * @param _uri string memory URI of the token to be minted
-        * @param _fee uint256 royalty of the token to be minted
-    */
+     * @dev Internal function to mint a new token.
+     * Reverts if the given token ID already exists.
+     * @param tokenId uint256 ID of the token to be minted
+     * @param _supply uint256 supply of the token to be minted
+     * @param _uri string memory URI of the token to be minted
+     * @param _fee uint256 royalty of the token to be minted
+     */
 
     function _mint(address from, uint256 tokenId, uint256 _supply, string memory _uri, uint256 _fee) internal {
         require(!_exists(tokenId), "ERC1155: token already minted");
@@ -763,14 +776,17 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     }
 
     /**
-        * @dev version of {_mint}.
-        *
-        * Requirements:
-        *
-        * - `tokenIds` and `amounts` must have the same length.
-    */
+     * @dev version of {_mint}.
+     *
+     * Requirements:
+     *
+     * - `tokenIds` and `amounts` must have the same length.
+     */
 
-    function _mintBatch(address to, uint256[] memory tokenIds, uint256[] memory amounts, bytes memory data) internal virtual {
+    function _mintBatch(address to, uint256[] memory tokenIds, uint256[] memory amounts, bytes memory data)
+        internal
+        virtual
+    {
         require(to != address(0), "ERC1155: mint to the zero address");
         require(tokenIds.length == amounts.length, "ERC1155: ids and amounts length mismatch");
 
@@ -778,7 +794,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
         _beforeTokenTransfer(operator, address(0), to, tokenIds, amounts, data);
 
-        for (uint i = 0; i < tokenIds.length; i++) {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
             _balances[tokenIds[i]][to] = amounts[i].add(_balances[tokenIds[i]][to]);
         }
 
@@ -788,13 +804,13 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     }
 
     /**
-        * @dev Internal function to burn a specific token.
-        * Reverts if the token does not exist.
-        * Deprecated, use {ERC721-_burn} instead.
-        * @param account owner of the token to burn
-        * @param tokenId uint256 ID of the token being burned
-        * @param amount uint256 amount of supply being burned
-    */    
+     * @dev Internal function to burn a specific token.
+     * Reverts if the token does not exist.
+     * Deprecated, use {ERC721-_burn} instead.
+     * @param account owner of the token to burn
+     * @param tokenId uint256 ID of the token being burned
+     * @param amount uint256 amount of supply being burned
+     */
 
     function _burn(address account, uint256 tokenId, uint256 amount) internal virtual {
         require(_exists(tokenId), "ERC1155Metadata: burn query for nonexistent token");
@@ -804,21 +820,17 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
         _beforeTokenTransfer(operator, account, address(0), _asSingletonArray(tokenId), _asSingletonArray(amount), "");
 
-        _balances[tokenId][account] = _balances[tokenId][account].sub(
-            amount,
-            "ERC_holderTokens1155: burn amount exceeds balance"
-        );
-
+        _balances[tokenId][account] =
+            _balances[tokenId][account].sub(amount, "ERC_holderTokens1155: burn amount exceeds balance");
 
         emit TransferSingle(operator, account, address(0), tokenId, amount);
     }
 
-
     /**
-        * @dev version of {_burn}.
-        * Requirements:
-        * - `ids` and `amounts` must have the same length.
-    */
+     * @dev version of {_burn}.
+     * Requirements:
+     * - `ids` and `amounts` must have the same length.
+     */
 
     function _burnBatch(address account, uint256[] memory tokenIds, uint256[] memory amounts) internal virtual {
         require(account != address(0), "ERC1155: burn from the zero address");
@@ -828,27 +840,32 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
         _beforeTokenTransfer(operator, account, address(0), tokenIds, amounts, "");
 
-        for (uint i = 0; i < tokenIds.length; i++) {
-            _balances[tokenIds[i]][account] = _balances[tokenIds[i]][account].sub(
-                amounts[i],
-                "ERC1155: burn amount exceeds balance"
-            );
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _balances[tokenIds[i]][account] =
+                _balances[tokenIds[i]][account].sub(amounts[i], "ERC1155: burn amount exceeds balance");
         }
 
         emit TransferBatch(operator, account, address(0), tokenIds, amounts);
     }
 
-    function mintAndTransfer(address from, address to, uint256 itemId, uint256 fee, uint256 _supply,string memory _tokenURI, uint256 qty,bytes memory data) public virtual override returns(uint256){
-        require(msg.sender == transferProxy,"ERC1155: caller is not Approved");
+    function mintAndTransfer(
+        address from,
+        address to,
+        uint256 itemId,
+        uint256 fee,
+        uint256 _supply,
+        string memory _tokenURI,
+        uint256 qty,
+        bytes memory data
+    ) public virtual override returns (uint256) {
+        require(msg.sender == transferProxy, "ERC1155: caller is not Approved");
         itemId = tokenCounter;
         _operatorApprovals[from][transferProxy] = true;
         _mint(from, itemId, _supply, _tokenURI, fee);
         safeTransferFrom(from, to, itemId, qty, data);
         tokenCounter += 1;
         return itemId;
-
     }
-
 
     function _beforeTokenTransfer(
         address operator,
@@ -857,9 +874,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256[] memory tokenIds,
         uint256[] memory amounts,
         bytes memory data
-    )
-        internal virtual
-    { }
+    ) internal virtual { }
 
     function _doSafeTransferAcceptanceCheck(
         address operator,
@@ -868,11 +883,11 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256 tokenId,
         uint256 amount,
         bytes memory data
-    )
-        private
-    {
+    ) private {
         if (to.isContract()) {
-            try IERC1155Receiver(to).onERC1155Received(operator, from, tokenId, amount, data) returns (bytes4 response) {
+            try IERC1155Receiver(to).onERC1155Received(operator, from, tokenId, amount, data) returns (
+                bytes4 response
+            ) {
                 if (response != IERC1155Receiver(to).onERC1155Received.selector) {
                     revert("ERC1155: ERC1155Receiver rejected tokens");
                 }
@@ -891,11 +906,11 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256[] memory tokenIds,
         uint256[] memory amounts,
         bytes memory data
-    )
-        private
-    {
+    ) private {
         if (to.isContract()) {
-            try IERC1155Receiver(to).onERC1155BatchReceived(operator, from, tokenIds, amounts, data) returns (bytes4 response) {
+            try IERC1155Receiver(to).onERC1155BatchReceived(operator, from, tokenIds, amounts, data) returns (
+                bytes4 response
+            ) {
                 if (response != IERC1155Receiver(to).onERC1155BatchReceived.selector) {
                     revert("ERC1155: ERC1155Receiver rejected tokens");
                 }
@@ -916,7 +931,6 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 }
 
 contract MintySwap is ERC1155 {
-
     address private owner;
 
     struct Sign {
@@ -925,10 +939,11 @@ contract MintySwap is ERC1155 {
         bytes32 s;
     }
 
-    constructor (string memory name, string memory symbol, string memory tokenURIPrefix, address _transferProxy) ERC1155 (name, symbol, _transferProxy) {
+    constructor(string memory name, string memory symbol, string memory tokenURIPrefix, address _transferProxy)
+        ERC1155(name, symbol, _transferProxy)
+    {
         owner = msg.sender;
         _setTokenURIPrefix(tokenURIPrefix);
-
     }
 
     modifier onlyOwner() {
@@ -936,36 +951,45 @@ contract MintySwap is ERC1155 {
         _;
     }
 
-    /** @dev change the Ownership from current owner to newOwner address
-        @param newOwner : newOwner address */    
+    /**
+     * @dev change the Ownership from current owner to newOwner address
+     *     @param newOwner : newOwner address
+     */
 
-    function ownerTransfership(address newOwner) public onlyOwner returns(bool){
+    function ownerTransfership(address newOwner) public onlyOwner returns (bool) {
         require(newOwner != address(0), "Ownable: new owner is the zero address");
         owner = newOwner;
         return true;
     }
 
-    /** @dev verify the tokenURI that should be verified by owner of the contract.
-        *requirements: signer must be owner of the contract
-        @param tokenURI string memory URI of token to be minted.
-        @param sign struct combination of uint8, bytes32, bytes 32 are v, r, s.
-        note : sign value must be in the order of v, r, s.
-
-    */
+    /**
+     * @dev verify the tokenURI that should be verified by owner of the contract.
+     *requirements: signer must be owner of the contract
+     *     @param tokenURI string memory URI of token to be minted.
+     *     @param sign struct combination of uint8, bytes32, bytes 32 are v, r, s.
+     *     note : sign value must be in the order of v, r, s.
+     *
+     */
 
     function verifySign(string memory tokenURI, Sign memory sign) internal view {
-        bytes32 hash = keccak256(abi.encodePacked(this,tokenURI));
-        require(owner == ecrecover(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash)), sign.v, sign.r, sign.s), "Owner sign verification failed");
+        bytes32 hash = keccak256(abi.encodePacked(this, tokenURI));
+        require(
+            owner
+                == ecrecover(
+                    keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash)), sign.v, sign.r, sign.s
+                ),
+            "Owner sign verification failed"
+        );
     }
 
-    function mint(string memory uri, uint256 supply, uint256 fee, Sign memory sign)  public {
+    function mint(string memory uri, uint256 supply, uint256 fee, Sign memory sign) public {
         verifySign(uri, sign);
         _mint(msg.sender, tokenCounter, supply, uri, fee);
         tokenCounter = tokenCounter + 1;
     }
 
-    function setBaseURI(string memory _baseURI) public onlyOwner{
-         _setTokenURIPrefix(_baseURI);
+    function setBaseURI(string memory _baseURI) public onlyOwner {
+        _setTokenURIPrefix(_baseURI);
     }
 
     function burn(uint256 tokenId, uint256 supply) public {

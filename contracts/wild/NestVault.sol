@@ -1,6 +1,6 @@
 /**
  *Submitted for verification at Etherscan.io on 2022-07-22
-*/
+ */
 
 // Sources flattened with hardhat v2.5.0 https://hardhat.org
 
@@ -12,30 +12,29 @@ pragma solidity ^0.8.6;
 
 // helper methods for interacting with ERC20 tokens and sending ETH that do not consistently return true/false
 library TransferHelper {
-    function safeApprove(address token, address to, uint value) internal {
+    function safeApprove(address token, address to, uint256 value) internal {
         // bytes4(keccak256(bytes('approve(address,uint)')));
         (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x095ea7b3, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: APPROVE_FAILED');
+        require(success && (data.length == 0 || abi.decode(data, (bool))), "TransferHelper: APPROVE_FAILED");
     }
 
-    function safeTransfer(address token, address to, uint value) internal {
+    function safeTransfer(address token, address to, uint256 value) internal {
         // bytes4(keccak256(bytes('transfer(address,uint)')));
         (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0xa9059cbb, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FAILED');
+        require(success && (data.length == 0 || abi.decode(data, (bool))), "TransferHelper: TRANSFER_FAILED");
     }
 
-    function safeTransferFrom(address token, address from, address to, uint value) internal {
+    function safeTransferFrom(address token, address from, address to, uint256 value) internal {
         // bytes4(keccak256(bytes('transferFrom(address,address,uint)')));
         (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x23b872dd, from, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FROM_FAILED');
+        require(success && (data.length == 0 || abi.decode(data, (bool))), "TransferHelper: TRANSFER_FROM_FAILED");
     }
 
-    function safeTransferETH(address to, uint value) internal {
-        (bool success,) = to.call{value:value,gas:5000}(new bytes(0));
-        require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
+    function safeTransferETH(address to, uint256 value) internal {
+        (bool success,) = to.call{ value: value, gas: 5000 }(new bytes(0));
+        require(success, "TransferHelper: ETH_TRANSFER_FAILED");
     }
 }
-
 
 // File contracts/interfaces/INestVault.sol
 
@@ -45,18 +44,16 @@ pragma solidity ^0.8.6;
 
 /// @dev Defines methods for Nest Vault
 interface INestVault {
-
     /// @dev Approve allowance amount to target contract address
     /// @dev target Target contract address
     /// @dev limit Amount limit can transferred once
-    function approve(address target, uint limit) external;
+    function approve(address target, uint256 limit) external;
 
     /// @dev Transfer to by allowance
     /// @param to Target receive address
     /// @param amount Transfer amount
-    function transferTo(address to, uint amount) external;
+    function transferTo(address to, uint256 amount) external;
 }
-
 
 // File contracts/interfaces/INestMapping.sol
 
@@ -66,7 +63,6 @@ pragma solidity ^0.8.6;
 
 /// @dev The interface defines methods for nest builtin contract address mapping
 interface INestMapping {
-
     /// @dev Set the built-in contract address of the system
     /// @param nestTokenAddress Address of nest token contract
     /// @param nestNodeAddress Address of nest node contract
@@ -102,18 +98,21 @@ interface INestMapping {
     /// @return nestQueryAddress INestQuery implementation contract address
     /// @return nnIncomeAddress NNIncome contract address
     /// @return nTokenControllerAddress INTokenController implementation contract address
-    function getBuiltinAddress() external view returns (
-        address nestTokenAddress,
-        address nestNodeAddress,
-        address nestLedgerAddress,
-        address nestMiningAddress,
-        address ntokenMiningAddress,
-        address nestPriceFacadeAddress,
-        address nestVoteAddress,
-        address nestQueryAddress,
-        address nnIncomeAddress,
-        address nTokenControllerAddress
-    );
+    function getBuiltinAddress()
+        external
+        view
+        returns (
+            address nestTokenAddress,
+            address nestNodeAddress,
+            address nestLedgerAddress,
+            address nestMiningAddress,
+            address ntokenMiningAddress,
+            address nestPriceFacadeAddress,
+            address nestVoteAddress,
+            address nestQueryAddress,
+            address nnIncomeAddress,
+            address nTokenControllerAddress
+        );
 
     /// @dev Get address of nest token contract
     /// @return Address of nest token contract
@@ -166,46 +165,44 @@ interface INestMapping {
     function checkAddress(string memory key) external view returns (address);
 }
 
-
 // File contracts/interfaces/INestGovernance.sol
 
 // GPL-3.0-or-later
 
 pragma solidity ^0.8.6;
+
 /// @dev This interface defines the governance methods
 interface INestGovernance is INestMapping {
-
     /// @dev Set governance authority
     /// @param addr Destination address
-    /// @param flag Weight. 0 means to delete the governance permission of the target address. Weight is not 
-    ///        implemented in the current system, only the difference between authorized and unauthorized. 
+    /// @param flag Weight. 0 means to delete the governance permission of the target address. Weight is not
+    ///        implemented in the current system, only the difference between authorized and unauthorized.
     ///        Here, a uint96 is used to represent the weight, which is only reserved for expansion
-    function setGovernance(address addr, uint flag) external;
+    function setGovernance(address addr, uint256 flag) external;
 
     /// @dev Get governance rights
     /// @param addr Destination address
-    /// @return Weight. 0 means to delete the governance permission of the target address. Weight is not 
-    ///        implemented in the current system, only the difference between authorized and unauthorized. 
+    /// @return Weight. 0 means to delete the governance permission of the target address. Weight is not
+    ///        implemented in the current system, only the difference between authorized and unauthorized.
     ///        Here, a uint96 is used to represent the weight, which is only reserved for expansion
-    function getGovernance(address addr) external view returns (uint);
+    function getGovernance(address addr) external view returns (uint256);
 
     /// @dev Check whether the target address has governance rights for the given target
     /// @param addr Destination address
-    /// @param flag Permission weight. The permission of the target address must be greater than this weight 
+    /// @param flag Permission weight. The permission of the target address must be greater than this weight
     /// to pass the check
     /// @return True indicates permission
-    function checkGovernance(address addr, uint flag) external view returns (bool);
+    function checkGovernance(address addr, uint256 flag) external view returns (bool);
 }
-
 
 // File contracts/NestBase.sol
 
 // GPL-3.0-or-later
 
 pragma solidity ^0.8.6;
+
 /// @dev Base contract of nest
 contract NestBase {
-
     /// @dev INestGovernance implementation contract address
     address public _governance;
 
@@ -216,11 +213,10 @@ contract NestBase {
         _governance = governance;
     }
 
-    /// @dev Rewritten in the implementation contract, for load other contract addresses. Call 
+    /// @dev Rewritten in the implementation contract, for load other contract addresses. Call
     ///      super.update(newGovernance) when overriding, and override method without onlyGovernance
     /// @param newGovernance INestGovernance implementation contract address
     function update(address newGovernance) public virtual {
-
         address governance = _governance;
         require(governance == msg.sender || INestGovernance(governance).checkGovernance(msg.sender, 0), "NEST:!gov");
         _governance = newGovernance;
@@ -239,15 +235,14 @@ contract NestBase {
     }
 }
 
-
 // File contracts/NestVault.sol
 
 // GPL-3.0-or-later
 
 pragma solidity ^0.8.6;
+
 /// @dev Nest Vault
 contract NestVault is NestBase, INestVault {
-
     // ETH:
     // Address of nest token
     address constant NEST_TOKEN_ADDRESS = 0x04abEdA201850aC0124161F037Efd70c74ddC74C;
@@ -257,19 +252,19 @@ contract NestVault is NestBase, INestVault {
     // address constant NEST_TOKEN_ADDRESS = 0x98f8669F6481EbB341B522fCD3663f79A3d1A6A7;
 
     // Allowances amount of each contract can transferred once
-    mapping(address=>uint) _allowances;
+    mapping(address => uint256) _allowances;
 
     /// @dev Approve allowance amount to target contract address
     /// @dev target Target contract address
     /// @dev limit Amount limit can transferred once
-    function approve(address target, uint limit) external override onlyGovernance {
+    function approve(address target, uint256 limit) external override onlyGovernance {
         _allowances[target] = limit;
     }
 
     /// @dev Transfer to by allowance
     /// @param to Target receive address
     /// @param amount Transfer amount
-    function transferTo(address to, uint amount) external override {
+    function transferTo(address to, uint256 amount) external override {
         require(_allowances[msg.sender] >= amount, "NV:exceeded allowance");
         TransferHelper.safeTransfer(NEST_TOKEN_ADDRESS, to, amount);
     }

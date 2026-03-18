@@ -1,6 +1,6 @@
 /**
  *Submitted for verification at Etherscan.io on 2022-08-20
-*/
+ */
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.3;
@@ -17,7 +17,7 @@ contract Ownable {
      * Constructor
      * @param addr The owner of the smart contract
      */
-    constructor (address addr) {
+    constructor(address addr) {
         require(addr != address(0), "non-zero address required");
         require(addr != address(1), "ecrecover address not allowed");
         owner = addr;
@@ -38,7 +38,7 @@ contract Ownable {
      * @param addr Specifies the address of the new owner.
      * @dev Throws if called by any account other than the owner.
      */
-    function transferOwnership (address addr) public virtual onlyOwner {
+    function transferOwnership(address addr) public virtual onlyOwner {
         require(addr != address(0), "non-zero address required");
         emit OwnershipTransferred(owner, addr);
         owner = addr;
@@ -51,10 +51,10 @@ contract Ownable {
  */
 interface IERC20 {
     /**
-    * Transfer token for a specified address
-    * @param to The address to transfer to.
-    * @param value The amount to be transferred.
-    */
+     * Transfer token for a specified address
+     * @param to The address to transfer to.
+     * @param value The amount to be transferred.
+     */
     function transfer(address to, uint256 value) external returns (bool);
 
     /**
@@ -88,10 +88,10 @@ interface IERC20 {
     function symbol() external view returns (string memory);
 
     /**
-    * Gets the balance of the address specified.
-    * @param addr The address to query the balance of.
-    * @return An uint256 representing the amount owned by the passed address.
-    */
+     * Gets the balance of the address specified.
+     * @param addr The address to query the balance of.
+     * @return An uint256 representing the amount owned by the passed address.
+     */
     function balanceOf(address addr) external view returns (uint256);
 
     /**
@@ -143,7 +143,7 @@ contract ERC20 is IERC20 {
      * @param tokenDecimals The decimals of the token
      * @param initialSupply The initial supply
      */
-    constructor (string memory tokenName, string memory tokenSymbol, uint8 tokenDecimals, uint256 initialSupply) {
+    constructor(string memory tokenName, string memory tokenSymbol, uint8 tokenDecimals, uint256 initialSupply) {
         _name = tokenName;
         _symbol = tokenSymbol;
         _decimals = tokenDecimals;
@@ -151,13 +151,13 @@ contract ERC20 is IERC20 {
     }
 
     /**
-    * @notice Transfers a given amount tokens to the address specified.
-    * @param from The address of the sender.
-    * @param to The address to transfer to.
-    * @param value The amount to be transferred.
-    * @return Returns true in case of success.
-    */
-    function _executeErc20Transfer (address from, address to, uint256 value) private returns (bool) {
+     * @notice Transfers a given amount tokens to the address specified.
+     * @param from The address of the sender.
+     * @param to The address to transfer to.
+     * @param value The amount to be transferred.
+     * @return Returns true in case of success.
+     */
+    function _executeErc20Transfer(address from, address to, uint256 value) private returns (bool) {
         // Checks
         require(to != address(0), "non-zero address required");
         require(from != address(0), "non-zero sender required");
@@ -199,13 +199,13 @@ contract ERC20 is IERC20 {
     }
 
     /**
-    * @notice Transfers a given amount tokens to the address specified.
-    * @param to The address to transfer to.
-    * @param value The amount to be transferred.
-    * @return Returns true in case of success.
-    */
+     * @notice Transfers a given amount tokens to the address specified.
+     * @param to The address to transfer to.
+     * @param value The amount to be transferred.
+     * @return Returns true in case of success.
+     */
     function transfer(address to, uint256 value) public override returns (bool) {
-        require (_executeErc20Transfer(msg.sender, to, value), "Failed to execute ERC20 transfer");
+        require(_executeErc20Transfer(msg.sender, to, value), "Failed to execute ERC20 transfer");
         return true;
     }
 
@@ -222,7 +222,7 @@ contract ERC20 is IERC20 {
         uint256 currentAllowance = _allowances[from][msg.sender];
         require(currentAllowance >= value, "Amount exceeds allowance");
 
-        require (_executeErc20Transfer(from, to, value), "Failed to execute transferFrom");
+        require(_executeErc20Transfer(from, to, value), "Failed to execute transferFrom");
 
         require(_approveSpender(from, msg.sender, currentAllowance - value), "ERC20: Approval failed");
 
@@ -273,10 +273,10 @@ contract ERC20 is IERC20 {
     }
 
     /**
-    * Gets the balance of the address specified.
-    * @param addr The address to query the balance of.
-    * @return An uint256 representing the amount owned by the passed address.
-    */
+     * Gets the balance of the address specified.
+     * @param addr The address to query the balance of.
+     * @return An uint256 representing the amount owned by the passed address.
+     */
     function balanceOf(address addr) public view override returns (uint256) {
         return _balances[addr];
     }
@@ -302,10 +302,10 @@ contract Mintable is ERC20, Ownable {
     uint256 public maxSupply;
 
     // Keeps track of the authorized minters
-    mapping (address => bool) internal _authorizedMinters;
+    mapping(address => bool) internal _authorizedMinters;
 
     // Keeps track of the authorized burners
-    mapping (address => bool) internal _authorizedBurners;
+    mapping(address => bool) internal _authorizedBurners;
 
     // ---------------------------------------
     // Events
@@ -352,9 +352,14 @@ contract Mintable is ERC20, Ownable {
      * @param tokenDecimals The decimals of the token
      * @param initialSupply The initial supply
      */
-    constructor (address newOwner, string memory tokenName, string memory tokenSymbol, uint8 tokenDecimals, uint256 initialSupply)
-    ERC20(tokenName, tokenSymbol, tokenDecimals, initialSupply)
-    Ownable(newOwner) { // solhint-disable-line no-empty-blocks
+    constructor(
+        address newOwner,
+        string memory tokenName,
+        string memory tokenSymbol,
+        uint8 tokenDecimals,
+        uint256 initialSupply
+    ) ERC20(tokenName, tokenSymbol, tokenDecimals, initialSupply) Ownable(newOwner) {  // solhint-disable-line
+    // no-empty-blocks
     }
 
     /**
@@ -378,7 +383,7 @@ contract Mintable is ERC20, Ownable {
      * @dev This function can be called by the owner only.
      * @param addr The destination address
      */
-    function grantMinter (address addr) public onlyOwner {
+    function grantMinter(address addr) public onlyOwner {
         require(!_authorizedMinters[addr], "Address authorized already");
         _authorizedMinters[addr] = true;
         emit OnMinterGranted(addr);
@@ -389,7 +394,7 @@ contract Mintable is ERC20, Ownable {
      * @dev This function can be called by the owner only.
      * @param addr The destination address
      */
-    function revokeMinter (address addr) public onlyOwner {
+    function revokeMinter(address addr) public onlyOwner {
         require(_authorizedMinters[addr], "Address was never authorized");
         _authorizedMinters[addr] = false;
         emit OnMinterRevoked(addr);
@@ -400,7 +405,7 @@ contract Mintable is ERC20, Ownable {
      * @dev This function can be called by the owner only.
      * @param addr The destination address
      */
-    function grantBurner (address addr) public onlyOwner {
+    function grantBurner(address addr) public onlyOwner {
         require(!_authorizedBurners[addr], "Address authorized already");
         _authorizedBurners[addr] = true;
         emit OnBurnerGranted(addr);
@@ -411,7 +416,7 @@ contract Mintable is ERC20, Ownable {
      * @dev This function can be called by the owner only.
      * @param addr The destination address
      */
-    function revokeBurner (address addr) public onlyOwner {
+    function revokeBurner(address addr) public onlyOwner {
         require(_authorizedBurners[addr], "Address was never authorized");
         _authorizedBurners[addr] = false;
         emit OnBurnerRevoked(addr);
@@ -421,7 +426,7 @@ contract Mintable is ERC20, Ownable {
      * @notice Updates the maximum limit for minting tokens.
      * @param newValue The new limit
      */
-    function changeMaxSupply (uint256 newValue) public onlyOwner {
+    function changeMaxSupply(uint256 newValue) public onlyOwner {
         require(newValue == 0 || newValue > _totalSupply, "Invalid max supply");
         emit OnMaxSupplyChanged(maxSupply, newValue);
         maxSupply = newValue;
@@ -433,7 +438,7 @@ contract Mintable is ERC20, Ownable {
      * @param addr The destination address
      * @param amount The number of tokens
      */
-    function mint (address addr, uint256 amount) public onlyMinter {
+    function mint(address addr, uint256 amount) public onlyMinter {
         require(addr != address(0) && addr != address(this), "Invalid address");
         require(amount > 0, "Invalid amount");
         require(canMint(amount), "Max token supply exceeded");
@@ -445,11 +450,12 @@ contract Mintable is ERC20, Ownable {
 
     /**
      * @notice Burns a given number of tokens from the address specified.
-     * @dev This function throws if the sender is not a whitelisted minter. In this context, minters and burners have the same privileges.
+     * @dev This function throws if the sender is not a whitelisted minter. In this context, minters and burners have
+     * the same privileges.
      * @param addr The destination address
      * @param amount The number of tokens
      */
-    function burn (address addr, uint256 amount) public onlyBurner {
+    function burn(address addr, uint256 amount) public onlyBurner {
         require(addr != address(0) && addr != address(this), "Invalid address");
         require(amount > 0, "Invalid amount");
         require(_totalSupply > 0, "No token supply");
@@ -466,7 +472,7 @@ contract Mintable is ERC20, Ownable {
      * @notice Indicates if we can issue/mint the number of tokens specified.
      * @param amount The number of tokens to issue/mint
      */
-    function canMint (uint256 amount) public view returns (bool) {
+    function canMint(uint256 amount) public view returns (bool) {
         return (maxSupply == 0) || (_totalSupply + amount <= maxSupply);
     }
 }
@@ -477,14 +483,14 @@ contract Mintable is ERC20, Ownable {
 contract Controllable is Ownable {
     address public controllerAddress;
 
-    event OnControllerChanged (address prevAddress, address newAddress);
+    event OnControllerChanged(address prevAddress, address newAddress);
 
     /**
      * @notice Constructor
      * @param ownerAddr The owner of the smart contract
      * @param controllerAddr The address of the controller
      */
-    constructor (address ownerAddr, address controllerAddr) Ownable (ownerAddr) {
+    constructor(address ownerAddr, address controllerAddr) Ownable(ownerAddr) {
         require(controllerAddr != address(0), "Controller address required");
         require(controllerAddr != ownerAddr, "Owner cannot be the Controller");
         controllerAddress = controllerAddr;
@@ -511,7 +517,7 @@ contract Controllable is Ownable {
      * @dev This function can be called by the owner only
      * @param controllerAddr The address of the controller
      */
-    function setController (address controllerAddr) public onlyOwner {
+    function setController(address controllerAddr) public onlyOwner {
         // Checks
         require(controllerAddr != address(0), "Controller address required");
         require(controllerAddr != owner, "Owner cannot be the Controller");
@@ -528,7 +534,7 @@ contract Controllable is Ownable {
      * @param addr Specifies the address of the new owner.
      * @dev Throws if called by any account other than the owner.
      */
-    function transferOwnership (address addr) public override onlyOwner {
+    function transferOwnership(address addr) public override onlyOwner {
         require(addr != controllerAddress, "Cannot transfer to controller");
         super.transferOwnership(addr);
     }
@@ -536,14 +542,17 @@ contract Controllable is Ownable {
 
 /**
  * @title Represents a receipt token. The token is fully compliant with the ERC20 interface.
- * @dev The token can be minted or burnt by whitelisted addresses only. Only the owner is allowed to enable/disable addresses.
+ * @dev The token can be minted or burnt by whitelisted addresses only. Only the owner is allowed to enable/disable
+ * addresses.
  */
 contract ReceiptToken is Mintable {
     /**
      * @notice Constructor.
      * @param newOwner The owner of the smart contract.
      */
-    constructor (address newOwner, uint256 initialMaxSupply) Mintable(newOwner, "Fractal Protocol Vault Token", "USDF", 6, 0) {
+    constructor(address newOwner, uint256 initialMaxSupply)
+        Mintable(newOwner, "Fractal Protocol Vault Token", "USDF", 6, 0)
+    {
         maxSupply = initialMaxSupply;
     }
 }
@@ -553,7 +562,7 @@ contract ReceiptToken is Mintable {
  */
 library Utils {
     // The code hash of any EOA
-    bytes32 constant internal EOA_HASH = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
+    bytes32 internal constant EOA_HASH = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
 
     /**
      * @notice Indicates if the address specified represents a smart contract.
@@ -561,7 +570,7 @@ library Utils {
      * @param addr The address to evaluate
      * @return Returns true if the address represents a smart contract
      */
-    function isContract (address addr) internal view returns (bool) {
+    function isContract(address addr) internal view returns (bool) {
         bytes32 eoaHash = EOA_HASH;
 
         bytes32 codeHash;
@@ -577,7 +586,7 @@ library Utils {
      * @param addr The address to evaluate
      * @return Returns a hash
      */
-    function getCodeHash (address addr) internal view returns (bytes32) {
+    function getCodeHash(address addr) internal view returns (bytes32) {
         bytes32 codeHash;
 
         // solhint-disable-next-line no-inline-assembly
@@ -598,14 +607,14 @@ library DateUtils {
     uint256 internal constant SECONDS_PER_MINUTE = 60;
 
     // The offset from 01/01/1970
-    int256 internal constant OFFSET19700101 = 2440588;
+    int256 internal constant OFFSET19700101 = 2_440_588;
 
     /**
      * @notice Gets the year of the timestamp specified.
      * @param timestamp The timestamp
      * @return year The year
      */
-    function getYear (uint256 timestamp) internal pure returns (uint256 year) {
+    function getYear(uint256 timestamp) internal pure returns (uint256 year) {
         (year,,) = _daysToDate(timestamp / SECONDS_PER_DAY);
     }
 
@@ -619,8 +628,16 @@ library DateUtils {
      * @param second The seconds
      * @return timestamp The timestamp
      */
-    function timestampFromDateTime(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second) internal pure returns (uint256 timestamp) {
-        timestamp = _daysFromDate(year, month, day) * SECONDS_PER_DAY + hour * SECONDS_PER_HOUR + minute * SECONDS_PER_MINUTE + second;
+    function timestampFromDateTime(
+        uint256 year,
+        uint256 month,
+        uint256 day,
+        uint256 hour,
+        uint256 minute,
+        uint256 second
+    ) internal pure returns (uint256 timestamp) {
+        timestamp = _daysFromDate(year, month, day) * SECONDS_PER_DAY + hour * SECONDS_PER_HOUR + minute
+            * SECONDS_PER_MINUTE + second;
     }
 
     /**
@@ -629,26 +646,28 @@ library DateUtils {
      * @param toTimestamp The target date
      * @return Returns the difference, in days
      */
-    function diffDays (uint256 fromTimestamp, uint256 toTimestamp) internal pure returns (uint256) {
+    function diffDays(uint256 fromTimestamp, uint256 toTimestamp) internal pure returns (uint256) {
         require(fromTimestamp <= toTimestamp, "Invalid order for timestamps");
         return (toTimestamp - fromTimestamp) / SECONDS_PER_DAY;
     }
 
     /**
-     * @notice Calculate year/month/day from the number of days since 1970/01/01 using the date conversion algorithm from http://aa.usno.navy.mil/faq/docs/JD_Formula.php and adding the offset 2440588 so that 1970/01/01 is day 0
-     * @dev Taken from https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary/blob/master/contracts/BokkyPooBahsDateTimeLibrary.sol
+     * @notice Calculate year/month/day from the number of days since 1970/01/01 using the date conversion algorithm
+     * from http://aa.usno.navy.mil/faq/docs/JD_Formula.php and adding the offset 2440588 so that 1970/01/01 is day 0
+     * @dev Taken from
+     * https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary/blob/master/contracts/BokkyPooBahsDateTimeLibrary.sol
      * @param _days The year
      * @return year The year
      * @return month The month
      * @return day The day
      */
-    function _daysToDate (uint256 _days) internal pure returns (uint256 year, uint256 month, uint256 day) {
+    function _daysToDate(uint256 _days) internal pure returns (uint256 year, uint256 month, uint256 day) {
         int256 __days = int256(_days);
 
-        int256 x = __days + 68569 + OFFSET19700101;
-        int256 n = 4 * x / 146097;
-        x = x - (146097 * n + 3) / 4;
-        int256 _year = 4000 * (x + 1) / 1461001;
+        int256 x = __days + 68_569 + OFFSET19700101;
+        int256 n = 4 * x / 146_097;
+        x = x - (146_097 * n + 3) / 4;
+        int256 _year = 4000 * (x + 1) / 1_461_001;
         x = x - 1461 * _year / 4 + 31;
         int256 _month = 80 * x / 2447;
         int256 _day = x - 2447 * _month / 80;
@@ -662,42 +681,41 @@ library DateUtils {
     }
 
     /**
-     * @notice Calculates the number of days from 1970/01/01 to year/month/day using the date conversion algorithm from http://aa.usno.navy.mil/faq/docs/JD_Formula.php and subtracting the offset 2440588 so that 1970/01/01 is day 0
-     * @dev Taken from https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary/blob/master/contracts/BokkyPooBahsDateTimeLibrary.sol
+     * @notice Calculates the number of days from 1970/01/01 to year/month/day using the date conversion algorithm from
+     * http://aa.usno.navy.mil/faq/docs/JD_Formula.php and subtracting the offset 2440588 so that 1970/01/01 is day 0
+     * @dev Taken from
+     * https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary/blob/master/contracts/BokkyPooBahsDateTimeLibrary.sol
      * @param year The year
      * @param month The month
      * @param day The day
      * @return _days Returns the number of days
      */
-    function _daysFromDate (uint256 year, uint256 month, uint256 day) internal pure returns (uint256 _days) {
+    function _daysFromDate(uint256 year, uint256 month, uint256 day) internal pure returns (uint256 _days) {
         require(year >= 1970, "Error");
-        int _year = int(year);
-        int _month = int(month);
-        int _day = int(day);
+        int256 _year = int256(year);
+        int256 _month = int256(month);
+        int256 _day = int256(day);
 
-        int __days = _day
-          - 32075
-          + 1461 * (_year + 4800 + (_month - 14) / 12) / 4
-          + 367 * (_month - 2 - (_month - 14) / 12 * 12) / 12
-          - 3 * ((_year + 4900 + (_month - 14) / 12) / 100) / 4
-          - OFFSET19700101;
+        int256 __days = _day - 32_075 + 1461 * (_year + 4800 + (_month - 14) / 12) / 4 + 367
+            * (_month - 2 - (_month - 14) / 12 * 12) / 12 - 3 * ((_year + 4900 + (_month - 14) / 12) / 100) / 4
+            - OFFSET19700101;
 
         _days = uint256(__days);
     }
 
-    function isLeapYear(uint timestamp) internal pure returns (bool leapYear) {
-        (uint year,,) = _daysToDate(timestamp / SECONDS_PER_DAY);
+    function isLeapYear(uint256 timestamp) internal pure returns (bool leapYear) {
+        (uint256 year,,) = _daysToDate(timestamp / SECONDS_PER_DAY);
         leapYear = _isLeapYear(year);
-    }    
+    }
 
-    function _isLeapYear (uint256 year) internal pure returns (bool leapYear) {
+    function _isLeapYear(uint256 year) internal pure returns (bool leapYear) {
         leapYear = ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
     }
 }
 
 interface IDeployable {
-    function deployCapital (uint256 deploymentAmount, bytes32 foreignNetwork) external;
-    function claim (uint256 dailyInterestAmount) external;
+    function deployCapital(uint256 deploymentAmount, bytes32 foreignNetwork) external;
+    function claim(uint256 dailyInterestAmount) external;
 }
 
 /**
@@ -723,7 +741,8 @@ contract Vault is Controllable {
 
     /**
      * @notice The current period. It is the zero-based day of the year, ranging from [0..364]
-     * @dev Day zero represents January 1st (first day of the year) whereas day 364 represents December 31st (last day of the day)
+     * @dev Day zero represents January 1st (first day of the year) whereas day 364 represents December 31st (last day
+     * of the day)
      */
     uint256 public currentPeriod;
 
@@ -738,7 +757,7 @@ contract Vault is Controllable {
     uint256 public flatFeePercent;
 
     // The decimals multiplier of the underlying ERC20
-    uint256 immutable private _decimalsMultiplier;
+    uint256 private immutable _decimalsMultiplier;
 
     /**
      * @notice The percentage of capital that needs to be invested. It ranges from [1..99]
@@ -771,7 +790,7 @@ contract Vault is Controllable {
     ReceiptToken private immutable _receiptToken;
 
     // The snapshots history
-    mapping (uint256 => Record) private _records;
+    mapping(uint256 => Record) private _records;
 
     // ---------------------------------------
     // Events
@@ -783,7 +802,7 @@ contract Vault is Controllable {
      * @param depositAmount Specifies the deposit amount in USDC or the ERC20 handled by this contract
      * @param receiptTokensAmount Specifies the amount of receipt tokens issued to the user
      */
-    event OnVaultDeposit (address tokenAddress, address fromAddress, uint256 depositAmount, uint256 receiptTokensAmount);
+    event OnVaultDeposit(address tokenAddress, address fromAddress, uint256 depositAmount, uint256 receiptTokensAmount);
 
     /**
      * @notice This event is fired when a user withdraws funds from the vault.
@@ -793,32 +812,34 @@ contract Vault is Controllable {
      * @param receiptTokensAmount Specifies the amount of receipt tokens withdrawn by the user
      * @param fee Specifies the withdrawal fee
      */
-    event OnVaultWithdrawal (address tokenAddress, address toAddress, uint256 erc20Amount, uint256 receiptTokensAmount, uint256 fee);
+    event OnVaultWithdrawal(
+        address tokenAddress, address toAddress, uint256 erc20Amount, uint256 receiptTokensAmount, uint256 fee
+    );
 
-    event OnTokenPriceChanged (uint256 prevTokenPrice, uint256 newTokenPrice);
-    event OnFlatWithdrawalFeeChanged (uint256 prevValue, uint256 newValue);
-    event OnYieldReserveAddressChanged (address prevAddress, address newAddress);
-    event OnFeesAddressChanged (address prevAddress, address newAddress);
-    event OnInvestmentPercentChanged (uint8 prevValue, uint8 newValue);
-    event OnCapitalLocked (uint256 amountLocked);
-    event OnInterestClaimed (uint256 interestAmount);
-    event OnAprChanged (uint256 prevApr, uint256 newApr);
-    event OnEmergencyWithdraw (uint256 withdrawalAmount);
+    event OnTokenPriceChanged(uint256 prevTokenPrice, uint256 newTokenPrice);
+    event OnFlatWithdrawalFeeChanged(uint256 prevValue, uint256 newValue);
+    event OnYieldReserveAddressChanged(address prevAddress, address newAddress);
+    event OnFeesAddressChanged(address prevAddress, address newAddress);
+    event OnInvestmentPercentChanged(uint8 prevValue, uint8 newValue);
+    event OnCapitalLocked(uint256 amountLocked);
+    event OnInterestClaimed(uint256 interestAmount);
+    event OnAprChanged(uint256 prevApr, uint256 newApr);
+    event OnEmergencyWithdraw(uint256 withdrawalAmount);
 
     // ---------------------------------------
     // Constructor
     // ---------------------------------------
-    constructor (
-        address ownerAddr, 
-        address controllerAddr, 
-        ReceiptToken receiptTokenInterface, 
-        IERC20 eip20Interface, 
-        uint256 initialApr, 
-        uint256 initialTokenPrice, 
+    constructor(
+        address ownerAddr,
+        address controllerAddr,
+        ReceiptToken receiptTokenInterface,
+        IERC20 eip20Interface,
+        uint256 initialApr,
+        uint256 initialTokenPrice,
         uint256 initialMinDepositAmount,
         uint256 flatFeePerc,
-        address feesAddr) 
-    Controllable (ownerAddr, controllerAddr) {
+        address feesAddr
+    ) Controllable(ownerAddr, controllerAddr) {
         // Checks
         require(initialMinDepositAmount > 0, "Invalid min deposit amount");
         require(feesAddr != address(0), "Invalid address for fees");
@@ -839,7 +860,7 @@ contract Vault is Controllable {
 
         // Create the first record
         currentPeriod = DateUtils.diffDays(startOfYearTimestamp, currentTimestamp);
-        
+
         // The APR must be expressed with 2 decimal places. Example: 5% = 500 whereas 5.75% = 575
         _records[currentPeriod] = Record(initialApr, initialTokenPrice, 0, 0);
 
@@ -874,7 +895,7 @@ contract Vault is Controllable {
      * @dev This function can be called by the owner or the controller.
      * @param addr The address of the yield reserve
      */
-    function setYieldReserveAddress (address addr) public onlyOwnerOrController {
+    function setYieldReserveAddress(address addr) public onlyOwnerOrController {
         require(addr != address(0) && addr != address(this), "Invalid address");
         require(Utils.isContract(addr), "The address must be a contract");
 
@@ -887,7 +908,7 @@ contract Vault is Controllable {
      * @dev This function can be called by the owner or the controller.
      * @param minAmount The minimum deposit amount
      */
-    function setMinDepositAmount (uint256 minAmount) public onlyOwnerOrController {
+    function setMinDepositAmount(uint256 minAmount) public onlyOwnerOrController {
         // Checks
         require(minAmount > 0, "Invalid minimum deposit amount");
 
@@ -898,9 +919,10 @@ contract Vault is Controllable {
     /**
      * @notice Sets a new flat fee for withdrawals.
      * @dev The new fee is allowed to be zero (aka: no fees).
-     * @param newFeeWithMultiplier The new fee, which is expressed per decimals precision of the underlying token (say USDC for example)
+     * @param newFeeWithMultiplier The new fee, which is expressed per decimals precision of the underlying token (say
+     * USDC for example)
      */
-    function setFlatWithdrawalFee (uint256 newFeeWithMultiplier) public onlyOwnerOrController {
+    function setFlatWithdrawalFee(uint256 newFeeWithMultiplier) public onlyOwnerOrController {
         // Example for USDC (6 decimal places):
         // Say the fee is: 0.03%
         // Thus the fee amount is: 0.03 * _decimalsMultiplier = 30000 = 0.03 * (10 to the power of 6)
@@ -913,7 +935,7 @@ contract Vault is Controllable {
      * @notice Sets the address for collecting fees.
      * @param addr The address
      */
-    function setFeeAddress (address addr) public onlyOwnerOrController {
+    function setFeeAddress(address addr) public onlyOwnerOrController {
         require(addr != address(0) && addr != feesAddress, "Invalid address for fees");
 
         emit OnFeesAddressChanged(feesAddress, addr);
@@ -925,7 +947,7 @@ contract Vault is Controllable {
      * @dev This function can be called during a migration only. It is guaranteed to fail otherwise.
      * @param newAmount The total amount deposited in the old Vault
      */
-    function setTotalDepositedAmount (uint256 newAmount) public onlyOwner {
+    function setTotalDepositedAmount(uint256 newAmount) public onlyOwner {
         require(newAmount > 0, "Non-zero amount required");
 
         // Make sure no funds were deposited into this contract yet
@@ -940,11 +962,12 @@ contract Vault is Controllable {
     }
 
     /**
-     * @notice Deposits funds in the vault. The caller gets the respective amount of receipt tokens in exchange for their deposit.
+     * @notice Deposits funds in the vault. The caller gets the respective amount of receipt tokens in exchange for
+     * their deposit.
      * @dev The number of receipt tokens is calculated based on the current token price.
      * @param depositAmount Specifies the deposit amount
      */
-    function deposit (uint256 depositAmount) public ifNotReentrantDeposit {
+    function deposit(uint256 depositAmount) public ifNotReentrantDeposit {
         // Make sure the deposit amount falls within the expected range
         require(depositAmount >= minDepositAmount, "Minimum deposit amount not met");
 
@@ -958,7 +981,9 @@ contract Vault is Controllable {
         require(underlyingTokenInterface.balanceOf(msg.sender) >= depositAmount, "Insufficient funds");
 
         // Make sure the user approved this contract to spend the amount specified
-        require(underlyingTokenInterface.allowance(msg.sender, address(this)) >= depositAmount, "Insufficient allowance");
+        require(
+            underlyingTokenInterface.allowance(msg.sender, address(this)) >= depositAmount, "Insufficient allowance"
+        );
 
         // Determine how many tokens can be issued/minted to the destination address
         uint256 numberOfReceiptTokens = depositAmount * USDF_DECIMAL_MULTIPLIER / _records[currentPeriod].tokenPrice;
@@ -972,7 +997,9 @@ contract Vault is Controllable {
         uint256 balanceBeforeTransfer = underlyingTokenInterface.balanceOf(address(this));
 
         // Make sure the ERC20 transfer succeeded
-        require(underlyingTokenInterface.transferFrom(msg.sender, address(this), depositAmount), "Token transfer failed");
+        require(
+            underlyingTokenInterface.transferFrom(msg.sender, address(this), depositAmount), "Token transfer failed"
+        );
 
         // The new balance of this contract, after the transfer
         uint256 newBalance = underlyingTokenInterface.balanceOf(address(this));
@@ -980,7 +1007,8 @@ contract Vault is Controllable {
         // At the very least, the new balance should be the previous balance + the deposit.
         require(newBalance == balanceBeforeTransfer + depositAmount, "Balance verification failed");
 
-        // Issue/mint the respective number of tokens. Users get a receipt token in exchange for their deposit in USDC/ERC20.
+        // Issue/mint the respective number of tokens. Users get a receipt token in exchange for their deposit in
+        // USDC/ERC20.
         _receiptToken.mint(msg.sender, numberOfReceiptTokens);
 
         // Emit a new "deposit" event
@@ -994,7 +1022,7 @@ contract Vault is Controllable {
      * @notice Withdraws a specific amount of tokens from the Vault.
      * @param receiptTokenAmount The number of tokens to withdraw from the vault
      */
-    function withdraw (uint256 receiptTokenAmount) public ifNotReentrantWithdrawal {
+    function withdraw(uint256 receiptTokenAmount) public ifNotReentrantWithdrawal {
         // Checks
         require(receiptTokenAmount > 0, "Invalid withdrawal amount");
 
@@ -1011,7 +1039,8 @@ contract Vault is Controllable {
         uint256 withdrawalAmount = toErc20Amount(receiptTokenAmount);
         require(withdrawalAmount <= _records[currentPeriod].totalDeposited, "Invalid withdrawal amount");
 
-        uint256 maxWithdrawalAmount = _records[currentPeriod].totalDeposited * (uint256(100) - uint256(investmentPercent)) / uint256(100);
+        uint256 maxWithdrawalAmount =
+            _records[currentPeriod].totalDeposited * (uint256(100) - uint256(investmentPercent)) / uint256(100);
         require(withdrawalAmount <= maxWithdrawalAmount, "Max withdrawal amount exceeded");
 
         uint256 currentBalance = underlyingTokenInterface.balanceOf(address(this));
@@ -1019,7 +1048,8 @@ contract Vault is Controllable {
 
         // Notice that the fee is applied in the underlying currency instead of receipt tokens.
         // The amount applicable to the fee
-        uint256 feeAmount = (flatFeePercent > 0) ? withdrawalAmount * flatFeePercent / uint256(100) / _decimalsMultiplier : 0;
+        uint256 feeAmount =
+            (flatFeePercent > 0) ? withdrawalAmount * flatFeePercent / uint256(100) / _decimalsMultiplier : 0;
         require(feeAmount < withdrawalAmount, "Invalid fee");
 
         // The amount to send to the destination address (recipient), after applying the fee
@@ -1041,7 +1071,9 @@ contract Vault is Controllable {
         }
 
         // Emit a new "withdrawal" event
-        emit OnVaultWithdrawal(address(underlyingTokenInterface), msg.sender, withdrawalAmount, receiptTokenAmount, feeAmount);
+        emit OnVaultWithdrawal(
+            address(underlyingTokenInterface), msg.sender, withdrawalAmount, receiptTokenAmount, feeAmount
+        );
 
         // Reset the reentrancy guard
         _reentrancyMutexForWithdrawals = 0; // solhint-disable-line reentrancy
@@ -1052,7 +1084,7 @@ contract Vault is Controllable {
      * @dev This function can be called by the owner only.
      * @param destinationAddr The destination address
      */
-    function emergencyWithdraw (address destinationAddr) public onlyOwner ifNotReentrantWithdrawal {
+    function emergencyWithdraw(address destinationAddr) public onlyOwner ifNotReentrantWithdrawal {
         require(destinationAddr != address(0) && destinationAddr != address(this), "Invalid address");
 
         // Wake up the reentrancy guard
@@ -1075,7 +1107,7 @@ contract Vault is Controllable {
      * @dev The APR must be expressed with 2 decimal places. Example: 5% = 500 whereas 5.75% = 575
      * @param newApr The new APR, expressed with 2 decimal places.
      */
-    function changeApr (uint256 newApr) public onlyOwner {
+    function changeApr(uint256 newApr) public onlyOwner {
         require(newApr > 0, "Invalid APR");
 
         compute();
@@ -1088,7 +1120,7 @@ contract Vault is Controllable {
      * @notice Sets the token price, arbitrarily.
      * @param newTokenPrice The new price of the receipt token
      */
-    function setTokenPrice (uint256 newTokenPrice) public onlyOwner {
+    function setTokenPrice(uint256 newTokenPrice) public onlyOwner {
         require(newTokenPrice > 0, "Invalid token price");
 
         compute();
@@ -1101,7 +1133,7 @@ contract Vault is Controllable {
      * @notice Sets the investment percent.
      * @param newPercent The new investment percent
      */
-    function setInvestmentPercent (uint8 newPercent) public onlyOwnerOrController {
+    function setInvestmentPercent(uint8 newPercent) public onlyOwnerOrController {
         require(newPercent > 0 && newPercent < 100, "Invalid investment percent");
 
         emit OnInvestmentPercentChanged(investmentPercent, newPercent);
@@ -1111,11 +1143,13 @@ contract Vault is Controllable {
     /**
      * @notice Computes the metrics (token price, daily interest) for the current day of year
      */
-    function compute () public {
+    function compute() public {
         uint256 currentTimestamp = block.timestamp; // solhint-disable-line not-rely-on-time
 
         uint256 newPeriod = DateUtils.diffDays(startOfYearTimestamp, currentTimestamp);
-        if (newPeriod <= currentPeriod) return;
+        if (newPeriod <= currentPeriod) {
+            return;
+        }
 
         uint256 x = 0;
 
@@ -1124,10 +1158,13 @@ contract Vault is Controllable {
             _records[i].apr = _records[i - 1].apr;
             _records[i].totalDeposited = _records[i - 1].totalDeposited;
 
-            uint256 diff = _records[i - 1].apr * USDF_DECIMAL_MULTIPLIER * uint256(100) / uint256(36500);
-            _records[i].tokenPrice = _records[i - 1].tokenPrice + (diff / uint256(10000));
-            _records[i].dailyInterest = _records[i - 1].totalDeposited * uint256(_records[i - 1].apr) / uint256(3650000);
-            if (x >= 30) break;
+            uint256 diff = _records[i - 1].apr * USDF_DECIMAL_MULTIPLIER * uint256(100) / uint256(36_500);
+            _records[i].tokenPrice = _records[i - 1].tokenPrice + (diff / uint256(10_000));
+            _records[i].dailyInterest =
+                _records[i - 1].totalDeposited * uint256(_records[i - 1].apr) / uint256(3_650_000);
+            if (x >= 30) {
+                break;
+            }
         }
 
         currentPeriod += x;
@@ -1137,7 +1174,7 @@ contract Vault is Controllable {
      * @notice Moves the deployable capital from the vault to the yield reserve.
      * @dev This function should fail if it would cause the vault to be left with <10% of deposited amount
      */
-    function lockCapital () public onlyOwnerOrController ifNotReentrantWithdrawal {
+    function lockCapital() public onlyOwnerOrController ifNotReentrantWithdrawal {
         // Wake up the reentrancy guard
         _reentrancyMutexForWithdrawals = 1;
 
@@ -1157,7 +1194,7 @@ contract Vault is Controllable {
     /**
      * @notice Claims the daily interest promised per APR.
      */
-    function claimDailyInterest () public onlyOwnerOrController {
+    function claimDailyInterest() public onlyOwnerOrController {
         compute();
 
         // Get the daily interest that need to be claimed at this point in time
@@ -1176,14 +1213,19 @@ contract Vault is Controllable {
 
     /**
      * @notice Gets the period of the current unix epoch.
-     * @dev The period is the zero-based day of the current year. It is the number of days that elapsed since January 1st of the current year.
+     * @dev The period is the zero-based day of the current year. It is the number of days that elapsed since January
+     * 1st of the current year.
      * @return Returns a number between [0..364]
      */
-    function getPeriodOfCurrentEpoch () public view returns (uint256) {
+    function getPeriodOfCurrentEpoch() public view returns (uint256) {
         return DateUtils.diffDays(startOfYearTimestamp, block.timestamp); // solhint-disable-line not-rely-on-time
     }
 
-    function getSnapshot (uint256 i) public view returns (uint256 apr, uint256 tokenPrice, uint256 totalDeposited, uint256 dailyInterest) {
+    function getSnapshot(uint256 i)
+        public
+        view
+        returns (uint256 apr, uint256 tokenPrice, uint256 totalDeposited, uint256 dailyInterest)
+    {
         apr = _records[i].apr;
         tokenPrice = _records[i].tokenPrice;
         totalDeposited = _records[i].totalDeposited;
@@ -1192,10 +1234,11 @@ contract Vault is Controllable {
 
     /**
      * @notice Gets the total amount deposited in the vault.
-     * @dev This value increases when people deposits funds in the vault. Likewise, it decreases when people withdraw from the vault.
+     * @dev This value increases when people deposits funds in the vault. Likewise, it decreases when people withdraw
+     * from the vault.
      * @return The total amount deposited in the vault.
      */
-    function getTotalDeposited () public view returns (uint256) {
+    function getTotalDeposited() public view returns (uint256) {
         return _records[currentPeriod].totalDeposited;
     }
 
@@ -1203,7 +1246,7 @@ contract Vault is Controllable {
      * @notice Gets the daily interest
      * @return The daily interest
      */
-    function getDailyInterest () public view returns (uint256) {
+    function getDailyInterest() public view returns (uint256) {
         return _records[currentPeriod].dailyInterest;
     }
 
@@ -1211,7 +1254,7 @@ contract Vault is Controllable {
      * @notice Gets the current token price
      * @return The price of the token
      */
-    function getTokenPrice () public view returns (uint256) {
+    function getTokenPrice() public view returns (uint256) {
         return _records[currentPeriod].tokenPrice;
     }
 
@@ -1219,7 +1262,7 @@ contract Vault is Controllable {
      * @notice Gets the maximum amount of USDC/ERC20 you can withdraw from the vault
      * @return The maximum withdrawal amount
      */
-    function getMaxWithdrawalAmount () public view returns (uint256) {
+    function getMaxWithdrawalAmount() public view returns (uint256) {
         return _records[currentPeriod].totalDeposited * (uint256(100) - uint256(investmentPercent)) / uint256(100);
     }
 
@@ -1228,7 +1271,7 @@ contract Vault is Controllable {
      * @dev This is the amount of capital that will be moved from the Vault to the Yield Reserve.
      * @return The amount of deployable capital
      */
-    function getDeployableCapital () public view returns (uint256) {
+    function getDeployableCapital() public view returns (uint256) {
         // X% of the total deposits should remain in the vault. This is the target vault balance.
         //
         // For example:
@@ -1236,7 +1279,8 @@ contract Vault is Controllable {
         // If the total deposits are 800k USDC and the investment percent is set to 90%
         // then the vault should keep the remaining 10% as a buffer for withdrawals.
         // In this example the vault should keep 80k USDC, which is the 10% of 800k USDC.
-        uint256 shouldRemainInVault = _records[currentPeriod].totalDeposited * (uint256(100) - uint256(investmentPercent)) / uint256(100);
+        uint256 shouldRemainInVault =
+            _records[currentPeriod].totalDeposited * (uint256(100) - uint256(investmentPercent)) / uint256(100);
 
         // The current balance at the Vault
         uint256 currentBalance = underlyingTokenInterface.balanceOf(address(this));
@@ -1246,10 +1290,11 @@ contract Vault is Controllable {
     }
 
     /**
-     * @notice Returns the amount of USDC you would get by burning the number of receipt tokens specified, at the current price.
+     * @notice Returns the amount of USDC you would get by burning the number of receipt tokens specified, at the
+     * current price.
      * @return The amount of USDC you get in exchange, at the current token price
      */
-    function toErc20Amount (uint256 receiptTokenAmount) public view returns (uint256) {
+    function toErc20Amount(uint256 receiptTokenAmount) public view returns (uint256) {
         return receiptTokenAmount * _records[currentPeriod].tokenPrice / USDF_DECIMAL_MULTIPLIER;
     }
 }

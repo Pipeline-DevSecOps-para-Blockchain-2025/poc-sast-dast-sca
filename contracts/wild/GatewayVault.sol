@@ -1,6 +1,6 @@
 /**
  *Submitted for verification at Etherscan.io on 2021-10-01
-*/
+ */
 
 // SPDX-License-Identifier: No License (None)
 pragma solidity ^0.8.0;
@@ -24,7 +24,7 @@ abstract contract Ownable {
      * @dev The Ownable constructor sets the original `owner` of the contract to the sender
      * account.
      */
-    constructor () {
+    constructor() {
         _owner = msg.sender;
         emit OwnershipTransferred(address(0), _owner);
     }
@@ -40,7 +40,7 @@ abstract contract Ownable {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(isOwner(),"Not Owner");
+        require(isOwner(), "Not Owner");
         _;
     }
 
@@ -75,7 +75,7 @@ abstract contract Ownable {
      * @param newOwner The address to transfer ownership to.
      */
     function _transferOwnership(address newOwner) internal {
-        require(newOwner != address(0),"Zero address not allowed");
+        require(newOwner != address(0), "Zero address not allowed");
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }
@@ -87,10 +87,8 @@ interface IERC20 {
 }
 
 contract GatewayVault is Ownable {
-
     mapping(address => bool) public gateways; // different gateways will be used for different pairs (chains)
     event ChangeGateway(address gateway, bool active);
-
 
     /**
      * @dev Throws if called by any account other than the Gateway.
@@ -100,7 +98,7 @@ contract GatewayVault is Ownable {
         _;
     }
 
-    function changeGateway(address gateway, bool active) external onlyOwner returns(bool) {
+    function changeGateway(address gateway, bool active) external onlyOwner returns (bool) {
         gateways[gateway] = active;
         emit ChangeGateway(gateway, active);
         return true;
