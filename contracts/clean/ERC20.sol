@@ -1,10 +1,11 @@
 /**
  * From OpenZeppelin: https://github.com/OpenZeppelin/openzeppelin-contracts
- * Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.5.0/contracts/token/ERC20/ERC20.sol
+ * Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.6.1/contracts/token/ERC20/ERC20.sol
  */
 
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v5.4.0) (token/ERC20/ERC20.sol)
+// OpenZeppelin Contracts (last updated v5.5.0) (token/ERC20/ERC20.sol)
+
 pragma solidity ^0.8.20;
 
 import { IERC20Errors } from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";

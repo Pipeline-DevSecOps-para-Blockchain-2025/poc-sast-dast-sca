@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ## Builder
-FROM docker.io/python:3.14-alpine3.22 AS builder
+FROM docker.io/python:3.14-alpine3.23 AS builder
 
 # General Python build depencies
 RUN --mount=type=cache,id=apk,target=/var/cache/apk \
@@ -14,14 +14,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     PIP_ROOT_USER_ACTION=ignore PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Build Slither wheel from source
-ARG SLITHER_VERSION=0.11.3
+ARG SLITHER_VERSION=0.11.5
 RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
     mkdir -p /out/wheels \
     && pip wheel --wheel-dir /out/wheels \
         slither-analyzer=="${SLITHER_VERSION}"
 
 # Download solc binary
-ARG SOLC_VERSION=0.8.30
+ARG SOLC_VERSION=0.8.34
 RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
     pip install --upgrade solc-select \
     && solc-select install "${SOLC_VERSION}" \
@@ -30,8 +30,8 @@ RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
     && install -m 755 "$(command -v solc)" /out/bin/solc
 
 ## Runtime
-FROM docker.io/python:3.14-alpine3.22 AS runtime
-LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>"
+FROM docker.io/python:3.14-alpine3.23 AS runtime
+LABEL org.opencontainers.image.authors="Eduwilll <eduwill100@gmail.com>; marmitar <tiagodepalves@gmail.com>; ; MatheusMadureiraa <matheusgmadureira@gmail.com>"
 LABEL org.opencontainers.image.description="Static analysis tooling for Solidity (Slither)"
 LABEL org.opencontainers.image.version="1.0.0"
 
@@ -53,17 +53,17 @@ RUN --mount=type=bind,from=builder,source=/out/wheels,target=/tmp/wheels \
         slither-analyzer
 
 # Setup non-root user
-RUN addgroup -S slither \
-    && adduser -S -h /home -G slither -s /sbin/nologin slither \
-    && mkdir -p /home \
-    && chown slither:slither /home
+RUN addgroup -g 1000 -S slither \
+    && adduser -u 1000 -S -h /home/slither -G slither -s /sbin/nologin slither \
+    && mkdir -p /home/slither \
+    && chown slither:slither /home/slither
 
 USER slither
 WORKDIR /slither
 
 # Custom default configuration
-COPY --chown=slither:slither --chown=0600 slither.config.json /home/slither.config.json
+COPY --chown=slither:slither --chmod=0600 slither.config.json /home/slither/slither.config.json
 
 # Run Slither by default
-ENTRYPOINT ["slither", "--config-file", "/home/slither.config.json"]
+ENTRYPOINT ["slither", "--config-file", "/home/slither/slither.config.json"]
 CMD ["--help"]
