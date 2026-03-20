@@ -154,7 +154,11 @@ def parseSlitherReport(String json) {
 }
 
 // Parses all reports/mythril/<name>.json files.
-// reportEntries is a List of [name: String, path: String] maps (from findFiles).
+// reportEntries is a List of [name: String, content: String] maps.
+// Handles filename conventions produced by the Mythril stage:
+//   clean_ReEntrancy.sol.json       → contracts/clean/ReEntrancy.sol
+//   vulnerable_ReEntrancy.sol.json  → contracts/vulnerable/ReEntrancy.sol
+//   wild_ReEntrancy.sol.json        → contracts/wild/ReEntrancy.sol
 // Returns a plain List<Map> safe to pass back into CPS context.
 @NonCPS
 def parseMythrilReports(List reportEntries) {
@@ -162,12 +166,18 @@ def parseMythrilReports(List reportEntries) {
 
     reportEntries.each { entry ->
         def baseName = entry.name                               // e.g. vulnerable_ReEntrancy.sol.json
-        def srcFile  = baseName
-            .replaceFirst(/\.json$/, '')                        // vulnerable_ReEntrancy.sol
-            .replaceFirst(/^(vulnerable|clean)_/, '')           // ReEntrancy.sol
-        def srcPath  = baseName.startsWith('clean_')
-            ? "contracts/clean/${srcFile}"
-            : "contracts/vulnerable/${srcFile}"
+        def withoutJson = baseName.replaceFirst(/\.json$/, '')  // vulnerable_ReEntrancy.sol
+
+        def srcPath
+        if (baseName.startsWith('clean_')) {
+            srcPath = "contracts/clean/${withoutJson.replaceFirst(/^clean_/, '')}"
+        } else if (baseName.startsWith('vulnerable_')) {
+            srcPath = "contracts/vulnerable/${withoutJson.replaceFirst(/^vulnerable_/, '')}"
+        } else if (baseName.startsWith('wild_')) {
+            srcPath = "contracts/wild/${withoutJson.replaceFirst(/^wild_/, '')}"
+        } else {
+            srcPath = "contracts/${withoutJson}"
+        }
 
         def data = new groovy.json.JsonSlurper().parseText(entry.content)
         def issues = data instanceof List ? data[0]?.issues : data?.issues
@@ -431,10 +441,9 @@ pipeline {
             catchError { unstash 'mythril-report' }
 
             script {
-                // Parse reports
-                def slitherFindings = []
+                def allSlitherFindings = []
                 if (fileExists('reports/slither.json')) {
-                    slitherFindings = parseSlitherReport(readFile('reports/slither.json'))
+                    allSlitherFindings = parseSlitherReport(readFile('reports/slither.json'))
                 }
 
                 def mythrilEntries = []
@@ -446,17 +455,24 @@ pipeline {
                         echo "Skipping empty mythril report: ${f.path}"
                     }
                 }
-                def mythrilFindings = parseMythrilReports(mythrilEntries)
+                def allMythrilFindings = parseMythrilReports(mythrilEntries)
 
-                // Display results
-                def summary = buildSummary(slitherFindings, mythrilFindings)
+                def slitherFindings = allSlitherFindings.findAll { !it.file.startsWith('contracts/wild/') }
+                def slitherWildFindings = allSlitherFindings.findAll { it.file.startsWith('contracts/wild/') }
+                def mythrilFindings = allMythrilFindings.findAll { !it.file.startsWith('contracts/wild/') }
+                def mythrilWildFindings = allMythrilFindings.findAll { it.file.startsWith('contracts/wild/') }
 
-                echo "=== SAST Results ===\n${summary.markdown}"
+                // --- Summaries ---
+                def summary     = buildSummary(slitherFindings, mythrilFindings)
+                def summaryWild = buildSummary(slitherWildFindings, mythrilWildFindings)
 
+                echo "=== SAST Results (curated) ===\n${summary.markdown}"
+                echo "=== SAST Results (wild) ===\n${summaryWild.markdown}"
+
+                // --- GitHub Checks (curated corpus only — annotated with file/line) ---
                 // GitHub Checks API limit: 50 annotations per call.
                 // Priority: High first, then Medium, then the rest.
                 // Only publish when findings are actually present.
-
                 if (slitherFindings) {
                     publishChecks(
                         name      : 'Slither SAST',
@@ -492,21 +508,37 @@ pipeline {
                     )
                 }
 
-                // VictoriaMetrics — emit per-contract metrics so repos of different
-                // sizes remain comparable and downstream dashboards can aggregate.
-                def contracts = findFiles(glob: 'contracts/**/*.sol')
+                // Wild corpus: summary-only check (no line annotations — files not in git diff)
+                if (slitherWildFindings || mythrilWildFindings) {
+                    publishChecks(
+                        name      : 'SAST Wild Corpus',
+                        title     : "Wild: Slither ${summaryWild.slither.total} / Mythril ${summaryWild.mythril.total} findings",
+                        summary   : summaryWild.markdown,
+                        conclusion: 'NEUTRAL',
+                    )
+                }
+
+                // --- VictoriaMetrics ---
+                // Per-contract metrics via buildSecurityMetricLines so repos of different
+                // sizes remain comparable and downstream dashboards can aggregate freely.
+                // corpus label distinguishes curated vs wild time series.
+                def contracts     = findFiles(glob: 'contracts/**/*.sol')
                     .collect { it.path.replaceFirst(/^contracts\//, '') }
-                def commonLabels = [
-                    branch: env.BRANCH_NAME,
-                    job: env.JOB_NAME,
-                    build_number: env.BUILD_NUMBER,
-                ]
+                def commonLabels  = [branch: env.BRANCH_NAME, job: env.JOB_NAME, build_number: env.BUILD_NUMBER, corpus: 'curated']
+                def wildLabels    = [branch: env.BRANCH_NAME, job: env.JOB_NAME, build_number: env.BUILD_NUMBER, corpus: 'wild']
+
                 def metricLines = []
                 if (slitherFindings) {
                     metricLines += buildSecurityMetricLines(slitherFindings, contracts, 'slither', commonLabels)
                 }
                 if (mythrilFindings) {
                     metricLines += buildSecurityMetricLines(mythrilFindings, contracts, 'mythril', commonLabels)
+                }
+                if (slitherWildFindings) {
+                    metricLines += buildSecurityMetricLines(slitherWildFindings, contracts, 'slither', wildLabels)
+                }
+                if (mythrilWildFindings) {
+                    metricLines += buildSecurityMetricLines(mythrilWildFindings, contracts, 'mythril', wildLabels)
                 }
                 if (metricLines) {
                     pushMetrics('http://victoriametrics:8428/api/v1/import/prometheus', metricLines.join('\n'))
