@@ -111,6 +111,71 @@ def buildSecurityMetricLines(List findings, List contracts, String tool, Map com
     return lines
 }
 
+def findingKey(Map finding) {
+    [
+        finding.tool,
+        finding.file,
+        finding.detector,
+        finding.severity,
+        finding.startLine,
+        finding.endLine,
+        finding.message,
+    ].collect { it == null ? '' : it.toString() }.join('|')
+}
+
+def countNewFindings(List currentFindings, List previousFindings) {
+    def previousKeys = previousFindings.collect { findingKey(it) } as Set
+    return currentFindings.count { !previousKeys.contains(findingKey(it)) }
+}
+
+def loadPreviousFindings() {
+    def findings = [slither: [], mythril: []]
+    def previousBuild = currentBuild.previousBuild
+    if (!previousBuild) {
+        return findings
+    }
+
+    try {
+        copyArtifacts(
+            projectName: env.JOB_NAME,
+            selector: [$class: 'BuildNumber', buildNumber: "${previousBuild.number}"],
+            filter: 'reports/slither.json,reports/mythril/*.json',
+            target: 'previous-reports',
+            optional: true,
+        )
+    } catch (Exception e) {
+        return findings
+    }
+
+    if (fileExists('previous-reports/reports/slither.json')) {
+        findings.slither = parseSlitherReport(readFile('previous-reports/reports/slither.json'))
+    }
+
+    def mythrilEntries = []
+    findFiles(glob: 'previous-reports/reports/mythril/*.json').each { f ->
+        def text = readFile(f.path).trim()
+        if (text) {
+            mythrilEntries << [name: f.name, content: text]
+        }
+    }
+    findings.mythril = parseMythrilReports(mythrilEntries)
+
+    return findings
+}
+
+def sendNotification(String subject, String body) {
+    try {
+        emailext(
+            to: '$DEFAULT_RECIPIENTS',
+            subject: subject,
+            body: body,
+            mimeType: 'text/plain',
+        )
+    } catch (Exception e) {
+        echo "WARN: Failed to send email notification: ${e.message}"
+    }
+}
+
 @NonCPS
 def parseSlitherReport(String json) {
     def data     = new groovy.json.JsonSlurper().parseText(json)
@@ -475,6 +540,36 @@ pipeline {
                 }
                 if (metricLines) {
                     pushMetrics('http://victoriametrics:8428/api/v1/import/prometheus', metricLines.join('\n'))
+                }
+
+                def previousFindings = loadPreviousFindings()
+                def newSlitherFindings = countNewFindings(slitherFindings, previousFindings.slither)
+                def newMythrilFindings = countNewFindings(mythrilFindings, previousFindings.mythril)
+                def hasNewFindings = newSlitherFindings > 0 || newMythrilFindings > 0
+                def buildResult = currentBuild.currentResult ?: 'SUCCESS'
+
+                if (buildResult != 'SUCCESS' || hasNewFindings) {
+                    def buildUrl = env.BUILD_URL ?: ''
+                    def lines = [
+                        "Build: ${currentBuild.fullDisplayName}",
+                        "Result: ${buildResult}",
+                        "Slither findings: ${summary.slither.total} (new: ${newSlitherFindings})",
+                        "Mythril findings: ${summary.mythril.total} (new: ${newMythrilFindings})",
+                    ]
+
+                    if (buildUrl) {
+                        lines += [
+                            '',
+                            "Build URL: ${env.RUN_DISPLAY_URL ?: buildUrl}",
+                            "Console log: ${buildUrl}console",
+                            "Artifacts: ${buildUrl}artifact/reports/",
+                        ]
+                    }
+
+                    sendNotification(
+                        "${buildResult}: ${currentBuild.fullDisplayName}",
+                        lines.join('\n'),
+                    )
                 }
             }
 
