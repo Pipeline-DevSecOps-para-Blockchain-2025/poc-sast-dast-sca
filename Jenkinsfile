@@ -4,6 +4,9 @@ def images = [
     mythril: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/mythril:0.24.8',
 ]
 
+findingSeverities = ['High', 'Medium', 'Low', 'Informational', 'Optimization']
+maxAnnotations = 50
+
 def reportCheck(Closure body) {
     withChecks(name: 'Jenkins CI', includeStage: true) {
         try {
@@ -16,15 +19,11 @@ def reportCheck(Closure body) {
     }
 }
 
-@NonCPS
 def extractSettingsJson(String json) {
     def config = new groovy.json.JsonSlurper().parseText(json)
-    def settings = [remappings: config.remappings]
-    return groovy.json.JsonOutput.toJson(settings)
+    return groovy.json.JsonOutput.toJson([remappings: config.remappings])
 }
 
-// Maps tool severity labels to GitHub Checks annotation levels.
-@NonCPS
 def mapSeverity(String severity) {
     switch (severity?.toLowerCase()) {
         case 'high':   return 'FAILURE'
@@ -33,9 +32,6 @@ def mapSeverity(String severity) {
     }
 }
 
-// Pushes Prometheus exposition-format metrics to VictoriaMetrics.
-// Errors are logged as warnings and never propagate.
-@NonCPS
 def pushMetrics(String url, String body) {
     try {
         def client   = java.net.http.HttpClient.newHttpClient()
@@ -53,7 +49,16 @@ def pushMetrics(String url, String body) {
     }
 }
 
-@NonCPS
+def newSeverityCounts() {
+    def counts = [:]
+    findingSeverities.each { severity -> counts[severity] = 0 }
+    return counts
+}
+
+def initContractStats() {
+    [total: 0, severityCounts: newSeverityCounts()]
+}
+
 def escapePromLabel(String value) {
     def v = value == null ? '' : value.toString()
     v = v.replace('\\', '\\\\')
@@ -62,7 +67,6 @@ def escapePromLabel(String value) {
     return v
 }
 
-@NonCPS
 def formatPromLabels(Map labels) {
     def parts = []
     labels.each { k, v ->
@@ -71,23 +75,17 @@ def formatPromLabels(Map labels) {
     return parts.join(',')
 }
 
-@NonCPS
 def buildSecurityMetricLines(List findings, List contracts, String tool, Map commonLabels) {
-    def severities = ['High', 'Medium', 'Low', 'Informational', 'Optimization']
     def byContract = [:]
 
     contracts.each { contract ->
-        def severityCounts = [:]
-        severities.each { sev -> severityCounts[sev] = 0 }
-        byContract[contract] = [total: 0, severityCounts: severityCounts]
+        byContract[contract] = initContractStats()
     }
 
     findings.each { f ->
         def contract = f.file.replaceFirst(/^contracts\//, '')
         if (!byContract.containsKey(contract)) {
-            def severityCounts = [:]
-            severities.each { sev -> severityCounts[sev] = 0 }
-            byContract[contract] = [total: 0, severityCounts: severityCounts]
+            byContract[contract] = initContractStats()
         }
 
         byContract[contract].total += 1
@@ -104,7 +102,7 @@ def buildSecurityMetricLines(List findings, List contracts, String tool, Map com
         lines << "ci_security_contract_scanned{${formatPromLabels(base)}} 1"
         lines << "ci_security_contract_findings_total{${formatPromLabels(base)}} ${stats.total}"
 
-        severities.each { sev ->
+        findingSeverities.each { sev ->
             def labels = base + [severity: sev]
             lines << "ci_security_findings{${formatPromLabels(labels)}} ${stats.severityCounts[sev] ?: 0}"
         }
@@ -113,9 +111,6 @@ def buildSecurityMetricLines(List findings, List contracts, String tool, Map com
     return lines
 }
 
-// Parses reports/slither.json into a list of normalized finding maps.
-// Filters to findings whose primary element is under contracts/ only.
-// Returns a plain List<Map> safe to pass back into CPS context.
 @NonCPS
 def parseSlitherReport(String json) {
     def data     = new groovy.json.JsonSlurper().parseText(json)
@@ -128,7 +123,6 @@ def parseSlitherReport(String json) {
         def lines = el.source_mapping?.lines ?: [1]
         def startLine = 1
         def endLine = 1
-        // Can't use .min() nor .max()
         if (lines) {
             startLine = lines[0] as int
             endLine = lines[0] as int
@@ -153,18 +147,15 @@ def parseSlitherReport(String json) {
     return findings
 }
 
-// Parses all reports/mythril/<name>.json files.
-// reportEntries is a List of [name: String, path: String] maps (from findFiles).
-// Returns a plain List<Map> safe to pass back into CPS context.
 @NonCPS
 def parseMythrilReports(List reportEntries) {
     def findings = []
 
     reportEntries.each { entry ->
-        def baseName = entry.name                               // e.g. vulnerable_ReEntrancy.sol.json
+        def baseName = entry.name
         def srcFile  = baseName
-            .replaceFirst(/\.json$/, '')                        // vulnerable_ReEntrancy.sol
-            .replaceFirst(/^(vulnerable|clean)_/, '')           // ReEntrancy.sol
+            .replaceFirst(/\.json$/, '')
+            .replaceFirst(/^(vulnerable|clean)_/, '')
         def srcPath  = baseName.startsWith('clean_')
             ? "contracts/clean/${srcFile}"
             : "contracts/vulnerable/${srcFile}"
@@ -188,8 +179,6 @@ def parseMythrilReports(List reportEntries) {
     return findings
 }
 
-// Builds per-tool aggregated counts and markdown summary tables.
-// Returns a plain Map safe to use in CPS context.
 @NonCPS
 def buildSummary(List slitherFindings, List mythrilFindings) {
     def aggregate = { List findings ->
@@ -207,17 +196,11 @@ def buildSummary(List slitherFindings, List mythrilFindings) {
         ]
     }
 
-    def slither = aggregate(slitherFindings)
-    def mythril = aggregate(mythrilFindings)
-
-    // Severity order for display
-    def sevOrder = ['High', 'Medium', 'Low', 'Informational', 'Optimization']
-
     def severityTable = { Map stats, String toolName ->
         def lines = ["### ${toolName} — ${stats.total} findings\n"]
         lines << "| Severity | Count |"
         lines << "| :------- | ----: |"
-        sevOrder.each { sev ->
+        findingSeverities.each { sev ->
             def count = stats.bySeverity[sev]
             if (count) lines << "| ${sev} | ${count} |"
         }
@@ -230,6 +213,9 @@ def buildSummary(List slitherFindings, List mythrilFindings) {
         lines.join('\n')
     }
 
+    def slither = aggregate(slitherFindings)
+    def mythril = aggregate(mythrilFindings)
+
     return [
         slither        : slither,
         mythril        : mythril,
@@ -239,9 +225,6 @@ def buildSummary(List slitherFindings, List mythrilFindings) {
     ]
 }
 
-// Orders findings by severity (High, Medium, then the rest) and caps them.
-// Implemented without CPS-hostile sort/take chains.
-@NonCPS
 def prioritizeFindings(List findings, int limit = 50) {
     def high = []
     def medium = []
@@ -273,10 +256,6 @@ def prioritizeFindings(List findings, int limit = 50) {
     return ordered
 }
 
-// ---------------------------------------------------------------------------
-// Pipeline
-// ---------------------------------------------------------------------------
-
 pipeline {
     agent any
     options {
@@ -303,7 +282,6 @@ pipeline {
                 }
             }
             steps {
-                // --build-info: additional output files, used by Slither
                 sh 'forge build --build-info'
                 sh 'forge config --json > .forge-config.json'
             }
@@ -353,16 +331,13 @@ pipeline {
                     agent {
                         docker {
                             image images.slither
-                            args '--entrypoint=' // shell for Docker Pipeline
+                            args '--entrypoint='
                             reuseNode true
                         }
                     }
                     steps {
                         reportCheck {
                             sh 'mkdir -p reports'
-                            // --ignore-compile: already compiled with build info
-                            // --exclude-dependencies: don't report issues from 'lib/*'
-                            // --no-fail-pedantic: only fail in case of runtime issues
                             sh '''
                                 slither . \
                                     --ignore-compile --exclude-dependencies \
@@ -376,7 +351,7 @@ pipeline {
                     agent {
                         docker {
                             image images.mythril
-                            args '--entrypoint=' // shell for Docker Pipeline
+                            args '--entrypoint='
                             reuseNode true
                         }
                     }
@@ -401,7 +376,6 @@ pipeline {
                                     reportCheck {
                                         script {
                                             def exitCode = sh(
-                                                // --solv, --solc-json: try to match foundry.toml
                                                 script: """
                                                     myth analyze ${safePath} \
                                                         --solv 0.8.26 --solc-json .solc-config.json \
@@ -431,7 +405,6 @@ pipeline {
             catchError { unstash 'mythril-report' }
 
             script {
-                // Parse reports
                 def slitherFindings = []
                 if (fileExists('reports/slither.json')) {
                     slitherFindings = parseSlitherReport(readFile('reports/slither.json'))
@@ -447,15 +420,9 @@ pipeline {
                     }
                 }
                 def mythrilFindings = parseMythrilReports(mythrilEntries)
-
-                // Display results
                 def summary = buildSummary(slitherFindings, mythrilFindings)
 
                 echo "=== SAST Results ===\n${summary.markdown}"
-
-                // GitHub Checks API limit: 50 annotations per call.
-                // Priority: High first, then Medium, then the rest.
-                // Only publish when findings are actually present.
 
                 if (slitherFindings) {
                     publishChecks(
@@ -463,7 +430,7 @@ pipeline {
                         title     : "Slither: ${summary.slither.total} findings",
                         summary   : summary.slitherMarkdown,
                         conclusion: 'NEUTRAL',
-                        annotations: prioritizeFindings(slitherFindings, 50).collect { f -> [
+                        annotations: prioritizeFindings(slitherFindings, maxAnnotations).collect { f -> [
                             path            : f.file,
                             startLine       : f.startLine,
                             endLine         : f.endLine,
@@ -481,7 +448,7 @@ pipeline {
                         title     : "Mythril: ${summary.mythril.total} findings",
                         summary   : summary.mythrilMarkdown,
                         conclusion: 'NEUTRAL',
-                        annotations: prioritizeFindings(mythrilFindings, 50).collect { f -> [
+                        annotations: prioritizeFindings(mythrilFindings, maxAnnotations).collect { f -> [
                             path            : f.file,
                             startLine       : f.startLine,
                             endLine         : f.endLine,
@@ -492,8 +459,6 @@ pipeline {
                     )
                 }
 
-                // VictoriaMetrics — emit per-contract metrics so repos of different
-                // sizes remain comparable and downstream dashboards can aggregate.
                 def contracts = findFiles(glob: 'contracts/**/*.sol')
                     .collect { it.path.replaceFirst(/^contracts\//, '') }
                 def commonLabels = [
