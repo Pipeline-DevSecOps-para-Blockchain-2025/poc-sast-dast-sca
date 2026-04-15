@@ -130,20 +130,34 @@ def countNewFindings(List currentFindings, List previousFindings) {
 
 def loadPreviousFindings() {
     def findings = [slither: [], mythril: []]
-    def previousBuild = currentBuild.previousBuild
-    if (!previousBuild) {
+    def previousBuild = currentBuild.previousSuccessfulBuild
+    def sourceJobName = env.JOB_NAME
+    def sourceSelector = null
+    def sourceDescription = null
+
+    if (previousBuild) {
+        sourceSelector = specific("${previousBuild.number}")
+        sourceDescription = "build ${previousBuild.number} of ${sourceJobName}"
+    } else if (env.BRANCH_NAME && env.BRANCH_NAME != 'main') {
+        sourceJobName = 'main'
+        sourceSelector = lastSuccessful()
+        sourceDescription = "last successful build of ${sourceJobName}"
+    }
+
+    if (!sourceSelector) {
         return findings
     }
 
     try {
         copyArtifacts(
-            projectName: env.JOB_NAME,
-            selector: [$class: 'BuildNumber', buildNumber: "${previousBuild.number}"],
+            projectName: sourceJobName,
+            selector: sourceSelector,
             filter: 'reports/slither.json,reports/mythril/*.json',
             target: 'previous-reports',
             optional: true,
         )
     } catch (Exception e) {
+        echo "WARN: Failed to load previous findings from ${sourceDescription}: ${e.message}"
         return findings
     }
 
