@@ -19,7 +19,7 @@ RUN groupmod -g 1000 mythril \
 # Download newer solc binary
 ARG SOLC_VERSION=0.8.34
 RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
-    pip install --upgrade solc-select py-solc-x \
+    pip install --upgrade solc-select \
     && solc-select install "${SOLC_VERSION}" \
     && solc-select use "${SOLC_VERSION}"
 
