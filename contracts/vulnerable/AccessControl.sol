@@ -15,7 +15,7 @@ contract Wallet {
 
     function transfer(address payable _to, uint256 _amount) public virtual {
         // check with msg.sender instead of tx.origin
-        require(tx.origin == owner, "Not owner");
+        require(msg.sender == owner, "Not owner");
 
         (bool sent,) = _to.call{ value: _amount }("");
         require(sent, "Failed to send Ether");
