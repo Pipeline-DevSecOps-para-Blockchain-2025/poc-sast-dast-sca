@@ -20,6 +20,7 @@ RUN groupmod -g 1000 mythril \
 ARG SOLC_VERSION=0.8.34
 RUN --mount=type=cache,id=pip,target=/root/.cache/pip \
     pip install --upgrade solc-select \
+    && sed -i 's/solc-bin.ethereum.org/binaries.soliditylang.org/g' "$(python -c 'import solcx.install; print(solcx.install.__file__)')" \
     && solc-select install "${SOLC_VERSION}" \
     && solc-select use "${SOLC_VERSION}"
 
