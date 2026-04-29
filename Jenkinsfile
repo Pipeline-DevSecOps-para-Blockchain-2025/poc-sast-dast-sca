@@ -2,6 +2,7 @@ def images = [
     foundry: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/foundry:1.5.1',
     slither: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/slither:0.11.5',
     mythril: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/mythril:0.24.8',
+    aderyn: 'ghcr.io/pipeline-devsecops-para-blockchain-2025/poc-sast-dast-sca/aderyn:0.6.8',
 ]
 
 findingSeverities = ['High', 'Medium', 'Low', 'Informational', 'Optimization']
@@ -129,7 +130,7 @@ def countNewFindings(List currentFindings, List previousFindings) {
 }
 
 def loadPreviousFindings() {
-    def findings = [slither: [], mythril: []]
+    def findings = [slither: [], mythril: [], aderyn: []]
     def previousBuild = currentBuild.previousSuccessfulBuild
     def sourceJobName = env.JOB_NAME
     def sourceSelector = null
@@ -152,7 +153,7 @@ def loadPreviousFindings() {
         copyArtifacts(
             projectName: sourceJobName,
             selector: sourceSelector,
-            filter: 'reports/slither.json,reports/mythril/*.json',
+            filter: 'reports/slither.json,reports/mythril/*.json,reports/aderyn.json',
             target: 'previous-reports',
             optional: true,
         )
@@ -173,6 +174,10 @@ def loadPreviousFindings() {
         }
     }
     findings.mythril = parseMythrilReports(mythrilEntries)
+
+    if (fileExists('previous-reports/reports/aderyn.json')) {
+        findings.aderyn = parseAderynReport(readFile('previous-reports/reports/aderyn.json'))
+    }
 
     return findings
 }
@@ -259,7 +264,50 @@ def parseMythrilReports(List reportEntries) {
 }
 
 @NonCPS
-def buildSummary(List slitherFindings, List mythrilFindings) {
+def parseAderynReport(String json) {
+    def data = new groovy.json.JsonSlurper().parseText(json)
+    def findings = []
+
+    [
+        [bucket: 'high_issues', severity: 'High'],
+        [bucket: 'low_issues', severity: 'Low'],
+    ].each { entry ->
+        def bucket = data == null ? null : data[entry.bucket]
+        bucket?.issues?.each { issue ->
+            issue.instances?.each { instance ->
+                def path = instance.contract_path ?: instance.file_path ?: ''
+                if (!path.startsWith('contracts/')) return
+
+                def line = 1
+                if (instance.line_no instanceof Number) {
+                    line = instance.line_no as int
+                } else if (instance.line_no) {
+                    try {
+                        line = instance.line_no.toString().toInteger()
+                    } catch (Exception ignored) {
+                        line = 1
+                    }
+                }
+
+                findings << [
+                    tool      : 'aderyn',
+                    detector  : issue.detector_name ?: issue.title ?: 'unknown',
+                    severity  : entry.severity,
+                    confidence: 'N/A',
+                    file      : path,
+                    startLine : line,
+                    endLine   : line,
+                    message   : issue.description?.replaceAll(/\n/, ' ')?.take(512) ?: issue.title ?: '',
+                ]
+            }
+        }
+    }
+
+    return findings
+}
+
+@NonCPS
+def buildSummary(List slitherFindings, List mythrilFindings, List aderynFindings) {
     def aggregate = { List findings ->
         def bySeverity = findings.groupBy { it.severity }
             .collectEntries { sev, list -> [(sev): list.size()] }
@@ -294,13 +342,16 @@ def buildSummary(List slitherFindings, List mythrilFindings) {
 
     def slither = aggregate(slitherFindings)
     def mythril = aggregate(mythrilFindings)
+    def aderyn = aggregate(aderynFindings)
 
     return [
         slither        : slither,
         mythril        : mythril,
+        aderyn         : aderyn,
         slitherMarkdown: severityTable(slither, 'Slither'),
         mythrilMarkdown: severityTable(mythril, 'Mythril'),
-        markdown       : severityTable(slither, 'Slither') + '\n\n' + severityTable(mythril, 'Mythril'),
+        aderynMarkdown : severityTable(aderyn, 'Aderyn'),
+        markdown       : severityTable(slither, 'Slither') + '\n\n' + severityTable(mythril, 'Mythril') + '\n\n' + severityTable(aderyn, 'Aderyn'),
     ]
 }
 
@@ -475,6 +526,22 @@ pipeline {
                         stash name: 'mythril-report', includes: 'reports/mythril/*.json', allowEmpty: true
                     }
                 }
+                stage('Aderyn') {
+                    agent {
+                        docker {
+                            image images.aderyn
+                            args '--entrypoint='
+                            reuseNode true
+                        }
+                    }
+                    steps {
+                        reportCheck {
+                            sh 'mkdir -p reports'
+                            sh 'aderyn --output reports/aderyn.json'
+                            stash name: 'aderyn-report', includes: 'reports/aderyn.json', allowEmpty: true
+                        }
+                    }
+                }
             }
         }
     }
@@ -482,6 +549,7 @@ pipeline {
         always {
             catchError { unstash 'slither-report' }
             catchError { unstash 'mythril-report' }
+            catchError { unstash 'aderyn-report' }
 
             script {
                 def slitherFindings = []
@@ -499,7 +567,13 @@ pipeline {
                     }
                 }
                 def mythrilFindings = parseMythrilReports(mythrilEntries)
-                def summary = buildSummary(slitherFindings, mythrilFindings)
+
+                def aderynFindings = []
+                if (fileExists('reports/aderyn.json')) {
+                    aderynFindings = parseAderynReport(readFile('reports/aderyn.json'))
+                }
+
+                def summary = buildSummary(slitherFindings, mythrilFindings, aderynFindings)
 
                 echo "=== SAST Results ===\n${summary.markdown}"
 
@@ -538,6 +612,23 @@ pipeline {
                     )
                 }
 
+                if (aderynFindings) {
+                    publishChecks(
+                        name      : 'Aderyn SAST',
+                        title     : "Aderyn: ${summary.aderyn.total} findings",
+                        summary   : summary.aderynMarkdown,
+                        conclusion: 'NEUTRAL',
+                        annotations: prioritizeFindings(aderynFindings, maxAnnotations).collect { f -> [
+                            path            : f.file,
+                            startLine       : f.startLine,
+                            endLine         : f.endLine,
+                            annotationLevel : mapSeverity(f.severity),
+                            title           : f.detector,
+                            message         : f.message,
+                        ]}
+                    )
+                }
+
                 def contracts = findFiles(glob: 'contracts/**/*.sol')
                     .collect { it.path.replaceFirst(/^contracts\//, '') }
                 def commonLabels = [
@@ -552,6 +643,9 @@ pipeline {
                 if (mythrilFindings) {
                     metricLines += buildSecurityMetricLines(mythrilFindings, contracts, 'mythril', commonLabels)
                 }
+                if (aderynFindings) {
+                    metricLines += buildSecurityMetricLines(aderynFindings, contracts, 'aderyn', commonLabels)
+                }
                 if (metricLines) {
                     pushMetrics('http://victoriametrics:8428/api/v1/import/prometheus', metricLines.join('\n'))
                 }
@@ -559,7 +653,8 @@ pipeline {
                 def previousFindings = loadPreviousFindings()
                 def newSlitherFindings = countNewFindings(slitherFindings, previousFindings.slither)
                 def newMythrilFindings = countNewFindings(mythrilFindings, previousFindings.mythril)
-                def hasNewFindings = newSlitherFindings > 0 || newMythrilFindings > 0
+                def newAderynFindings = countNewFindings(aderynFindings, previousFindings.aderyn)
+                def hasNewFindings = newSlitherFindings > 0 || newMythrilFindings > 0 || newAderynFindings > 0
                 def buildResult = currentBuild.currentResult ?: 'SUCCESS'
 
                 if (buildResult != 'SUCCESS' || hasNewFindings) {
@@ -569,6 +664,7 @@ pipeline {
                         "Result: ${buildResult}",
                         "Slither findings: ${summary.slither.total} (new: ${newSlitherFindings})",
                         "Mythril findings: ${summary.mythril.total} (new: ${newMythrilFindings})",
+                        "Aderyn findings: ${summary.aderyn.total} (new: ${newAderynFindings})",
                     ]
 
                     if (buildUrl) {
